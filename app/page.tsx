@@ -1,9 +1,9 @@
 import Homepage from "@/components/Homepage";
-import Neuron from '@/components/neuron';
+import Neuronpage from "@/components/Neuronpage";
 import Image from "next/image";
 
 export default function Home() {
   return (
-    <Neuron />
+    <Neuronpage />
   );
 }
