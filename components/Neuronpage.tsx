@@ -90,7 +90,7 @@ export default function Neuronpage() {
         <header className="bg-white border-b border-gray-200 py-2 px-3 shadow-sm sticky top-0 z-10">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-xl font-bold text-gray-800">Neuron AI</h1>
-            <p className="text-xs text-gray-600">Ask anything, get intelligent answers</p>
+            <p className="text-xs text-gray-600">Get answers at lightning speed.</p>
           </div>
         </header>
 
