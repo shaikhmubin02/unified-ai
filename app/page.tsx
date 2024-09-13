@@ -1,4 +1,3 @@
-import Homepage from "@/components/Homepage";
 import Neuronpage from "@/components/Neuronpage";
 import Image from "next/image";
 

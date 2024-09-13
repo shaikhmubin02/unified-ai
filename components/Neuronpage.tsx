@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 import { MemoryInput } from './MemoryInput'
+import { SignedOut, SignedIn, UserButton, SignInButton } from '@clerk/nextjs'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -229,6 +230,12 @@ export default function Neuronpage() {
                 <p>Settings</p>
               </TooltipContent>
             </Tooltip>
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </TooltipProvider>
         </nav>
       </div>
