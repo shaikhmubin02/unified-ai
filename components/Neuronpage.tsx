@@ -6,56 +6,205 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Send, Sparkles, History, Bookmark, Settings, ChevronRight } from 'lucide-react'
+import { Search, Send, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, PlusCircle, Trash2 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
+import { MemoryInput } from './MemoryInput'
+
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface ChatHistory {
+  id: string
+  title: string
+  messages: Message[]
+}
 
 export default function Neuronpage() {
   const [query, setQuery] = useState('')
-  const [response, setResponse] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [wordCount, setWordCount] = useState(0)
+  const [chatHistories, setChatHistories] = useState<ChatHistory[]>([])
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null)
+  const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false)
+  const [memory, setMemory] = useState('')
+  const [isMemoryDialogOpen, setIsMemoryDialogOpen] = useState(false)
 
   useEffect(() => {
-    const words = response.trim().split(/\s+/)
-    setWordCount(words.length)
-  }, [response])
+    // Create a new chat only if there are no existing chats
+    if (chatHistories.length === 0) {
+      const initialChatId = Date.now().toString()
+      const initialChat: ChatHistory = {
+        id: initialChatId,
+        title: 'New Chat',
+        messages: []
+      }
+      setChatHistories([initialChat])
+      setCurrentChatId(initialChatId)
+    }
+
+    // Load memory from localStorage on component mount
+    const savedMemory = localStorage.getItem('chatMemory')
+    if (savedMemory) {
+      setMemory(savedMemory)
+    }
+  }, [])
+
+  const createNewChat = () => {
+    const newChatId = Date.now().toString()
+    const newChat: ChatHistory = {
+      id: newChatId,
+      title: 'New Chat',
+      messages: []
+    }
+    setChatHistories(prev => [newChat, ...prev])
+    setCurrentChatId(newChatId)
+    setMessages([])
+  }
+
+  const handleNewChat = () => {
+    createNewChat()
+    setIsHistorySidebarOpen(true)
+  }
 
   const handleSearch = async () => {
-    if (!query.trim()) return
+    if (!query.trim() || !currentChatId) return
     setIsLoading(true)
+    const newMessage: Message = { role: 'user', content: query }
+    const updatedMessages = [...messages, newMessage]
+    setMessages(updatedMessages)
+    setQuery('')
     try {
       const response = await axios.post('/api/chat', {
-        messages: [{ role: 'user', content: query }]
+        messages: [{ role: 'system', content: memory }, ...updatedMessages]
       })
-      setResponse(response.data.content)
+      const assistantMessage: Message = { role: 'assistant', content: response.data.content }
+      const finalMessages = [...updatedMessages, assistantMessage]
+      setMessages(finalMessages)
+      
+      // Update chat history
+      setChatHistories(prev => prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, messages: finalMessages, title: query.slice(0, 30) + (query.length > 30 ? '...' : '') }
+          : chat
+      ))
     } catch (error) {
       console.error('Error fetching response:', error)
-      setResponse('An error occurred while processing your request.')
+      const errorMessage: Message = { role: 'assistant', content: 'An error occurred while processing your request.' }
+      setMessages(prevMessages => [...prevMessages, errorMessage])
     } finally {
       setIsLoading(false)
     }
   }
 
+  const selectChat = (chatId: string) => {
+    const selectedChat = chatHistories.find(chat => chat.id === chatId)
+    if (selectedChat) {
+      setCurrentChatId(chatId)
+      setMessages(selectedChat.messages)
+    }
+  }
+
+  const toggleHistorySidebar = () => {
+    setIsHistorySidebarOpen(!isHistorySidebarOpen)
+  }
+
+  const deleteChat = (chatId: string) => {
+    setChatHistories(prev => prev.filter(chat => chat.id !== chatId))
+    if (currentChatId === chatId) {
+      const remainingChats = chatHistories.filter(chat => chat.id !== chatId)
+      if (remainingChats.length > 0) {
+        setCurrentChatId(remainingChats[0].id)
+        setMessages(remainingChats[0].messages)
+      } else {
+        createNewChat()
+      }
+    }
+  }
+
+  const saveMemory = (newMemory: string) => {
+    setMemory(newMemory)
+    localStorage.setItem('chatMemory', newMemory)
+    setIsMemoryDialogOpen(false)
+  }
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Sidebar */}
-      <div className="w-12 bg-white border-r border-gray-200 p-2 hidden md:flex flex-col items-center shadow-sm fixed h-full">
-        <div className="mb-4">
+      {/* Main Sidebar */}
+      <div className="w-12 bg-white border-r border-gray-200 p-2 hidden md:flex flex-col items-center shadow-sm fixed h-full z-20">
+        <div className="mt-3 mb-4">
           <Sparkles className="h-6 w-6 text-blue-500" />
         </div>
+        <div className="w-8 h-px bg-gray-200 mb-2"></div>
         <nav className="flex flex-col items-center space-y-4">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                  onClick={handleNewChat}
+                >
+                  <PlusCircle className="h-4 w-4 text-gray-600" />
+                  <span className="sr-only">New Chat</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>New Chat</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                  onClick={toggleHistorySidebar}
+                >
                   <History className="h-4 w-4 text-gray-600" />
                   <span className="sr-only">History</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
                 <p>History</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Dialog open={isMemoryDialogOpen} onOpenChange={setIsMemoryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                    >
+                      <Brain className="h-4 w-4 text-gray-600" />
+                      <span className="sr-only">Memory</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[550px] bg-white border-none shadow-lg">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-gray-900">AI Memory</DialogTitle>
+                      <DialogDescription className="text-gray-600">
+                        Set instructions or context for the AI to remember across all conversations.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <MemoryInput initialMemory={memory} onSave={saveMemory} />
+                    <DialogFooter className="mt-6">
+                      <div className="text-sm text-gray-500">
+                        This memory will be applied to all future conversations.
+                      </div>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Memory</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -84,6 +233,52 @@ export default function Neuronpage() {
         </nav>
       </div>
 
+      {/* History Sidebar */}
+      <div className={`w-64 bg-white border-r border-gray-200 fixed h-full overflow-y-auto transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-12' : '-translate-x-full'} z-10 flex flex-col`}>
+        <div className="p-4 border-b border-gray-200">
+          <Button 
+            onClick={handleNewChat}
+            className="w-full"
+          >
+            New Chat
+          </Button>
+        </div>
+        <nav className="flex-1 overflow-y-auto p-4">
+          <div className="text-xs font-semibold text-gray-500 mb-2">Previous Chats</div>
+          <div className="space-y-2">
+            {chatHistories.map(chat => (
+              <div key={chat.id} className="flex items-center space-x-2">
+                <Button
+                  variant={chat.id === currentChatId ? "secondary" : "ghost"}
+                  className="flex-grow justify-start text-left"
+                  onClick={() => selectChat(chat.id)}
+                >
+                  {chat.title}
+                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteChat(chat.id)}
+                        className="flex-shrink-0 h-8 w-8 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete Chat</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>Delete Chat</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            ))}
+          </div>
+        </nav>
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden md:ml-12">
         {/* Header */}
@@ -105,23 +300,23 @@ export default function Neuronpage() {
               <TabsContent value="focus" className="flex-1 overflow-hidden">
                 <Card className="h-full flex flex-col mb-6">
                   <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
-                      {response ? (
-                        <div className="prose max-w-none">
-                          <h2 className="text-lg font-semibold mb-2 text-gray-800">Response</h2>
-                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{response}</p>
-                        </div>
+                    <ScrollArea className="flex-1">
+                      {messages.length > 0 ? (
+                        messages.map((message, index) => (
+                          <div key={index} className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                            <div className={`inline-block p-2 rounded-lg ${message.role === 'user' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                            </div>
+                          </div>
+                        ))
                       ) : (
-                        <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center">
+                        <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-36">
                           <Sparkles className="h-12 w-12 text-blue-500 mb-2" />
                           <p className="text-base font-medium">Ask a question to get started!</p>
                           <p className="text-xs mt-1">Type your query in the search bar below</p>
                         </div>
                       )}
-                    {response && (
-                      <div className="mt-2 text-xs text-gray-500 text-right">
-                        Word count: {wordCount}
-                      </div>
-                    )}
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </TabsContent>
