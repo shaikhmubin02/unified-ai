@@ -6,9 +6,10 @@ import { Brain } from 'lucide-react'
 interface MemoryInputProps {
   initialMemory: string
   onSave: (memory: string) => void
+  maxCharacters: number
 }
 
-export function MemoryInput({ initialMemory, onSave }: MemoryInputProps) {
+export function MemoryInput({ initialMemory, onSave, maxCharacters }: MemoryInputProps) {
   const [memory, setMemory] = useState(initialMemory)
 
   useEffect(() => {
@@ -17,6 +18,11 @@ export function MemoryInput({ initialMemory, onSave }: MemoryInputProps) {
 
   const handleSave = () => {
     onSave(memory)
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value.slice(0, maxCharacters)
+    setMemory(newValue)
   }
 
   return (
@@ -28,13 +34,16 @@ export function MemoryInput({ initialMemory, onSave }: MemoryInputProps) {
       <Textarea
         placeholder="Enter instructions or context for the AI to remember..."
         value={memory}
-        onChange={(e) => setMemory(e.target.value)}
+        onChange={handleChange}
         rows={6}
         className="w-full p-3 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
       />
-      <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out">
-        Save Memory
-      </Button>
+      <div className="flex justify-between items-center text-sm text-gray-500">
+        <span>{memory.length} / {maxCharacters} characters</span>
+        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out">
+          Save Memory
+        </Button>
+      </div>
     </div>
   )
 }
