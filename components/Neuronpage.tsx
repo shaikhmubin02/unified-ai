@@ -48,11 +48,17 @@ export default function Neuronpage() {
       setCurrentChatId(initialChatId)
     }
 
-    // Load memory from localStorage on component mount
-    const savedMemory = localStorage.getItem('chatMemory')
-    if (savedMemory) {
-      setMemory(savedMemory)
+    // Load memory from API on component mount
+    const fetchMemory = async () => {
+      try {
+        const response = await axios.get('/api/memory')
+        setMemory(response.data.memory)
+      } catch (error) {
+        console.error('Error fetching memory:', error)
+      }
     }
+
+    fetchMemory()
   }, [])
 
   const createNewChat = () => {
@@ -127,10 +133,14 @@ export default function Neuronpage() {
     }
   }
 
-  const saveMemory = (newMemory: string) => {
-    setMemory(newMemory)
-    localStorage.setItem('chatMemory', newMemory)
-    setIsMemoryDialogOpen(false)
+  const saveMemory = async (newMemory: string) => {
+    try {
+      await axios.post('/api/memory', { memory: newMemory })
+      setMemory(newMemory)
+      setIsMemoryDialogOpen(false)
+    } catch (error) {
+      console.error('Error saving memory:', error)
+    }
   }
 
   return (

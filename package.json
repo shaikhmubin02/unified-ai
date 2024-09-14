@@ -23,6 +23,7 @@
     "groq-sdk": "^0.7.0",
     "lucide-react": "^0.439.0",
     "mermaid": "^11.2.0",
+    "mongoose": "^8.6.2",
     "next": "14.2.9",
     "openai": "^4.60.0",
     "react": "^18",
@@ -35,6 +36,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
