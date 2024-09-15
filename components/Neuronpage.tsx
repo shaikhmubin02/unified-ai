@@ -538,8 +538,6 @@ export default function Neuronpage() {
                             <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
                             <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
                               <div className="relative">
-                                <div className="absolute inset-y-0 left-0 w-4 md:w-6 lg:w-8 bg-gradient-to-r from-white to-transparent z-10"></div>
-                                <div className="absolute inset-y-0 right-0 w-4 md:w-6 lg:w-8 bg-gradient-to-l from-white to-transparent z-10"></div>
                                 <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={60}>
                                   {randomQuestions.map((item, index) => (
                                     <div
@@ -553,8 +551,6 @@ export default function Neuronpage() {
                                 </Marquee>
                               </div>
                               <div className="relative">
-                                <div className="absolute inset-y-0 left-0 w-4 md:w-6 lg:w-8 bg-gradient-to-r from-white to-transparent z-10"></div>
-                                <div className="absolute inset-y-0 right-0 w-4 md:w-6 lg:w-8 bg-gradient-to-l from-white to-transparent z-10"></div>
                                 <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={60}>
                                   {scienceQuestions.map((item, index) => (
                                     <div
@@ -568,8 +564,6 @@ export default function Neuronpage() {
                                 </Marquee>
                               </div>
                               <div className="relative">
-                                <div className="absolute inset-y-0 left-0 w-4 md:w-6 lg:w-8 bg-gradient-to-r from-white to-transparent z-10"></div>
-                                <div className="absolute inset-y-0 right-0 w-4 md:w-6 lg:w-8 bg-gradient-to-l from-white to-transparent z-10"></div>
                                 <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={70}>
                                   {technologyQuestions.map((item, index) => (
                                     <div

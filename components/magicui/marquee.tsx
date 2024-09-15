@@ -25,7 +25,7 @@ export default function Marquee({
     <div
       {...props}
       className={cn(
-        "group flex overflow-hidden p-2 [--gap:1rem] [gap:var(--gap)]",
+        "group flex overflow-hidden p-2 [--gap:1rem] [gap:var(--gap)] relative",
         {
           "flex-row": !vertical,
           "flex-col": vertical,
@@ -49,6 +49,10 @@ export default function Marquee({
             {children}
           </div>
         ))}
+      {/* Fade blur effect on the left side */}
+      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
+      {/* Fade blur effect on the right side */}
+      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white to-transparent pointer-events-none" style={{ transform: 'scaleX(-1)' }}></div>
     </div>
   );
 }
