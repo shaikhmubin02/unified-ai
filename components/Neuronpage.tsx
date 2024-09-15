@@ -647,7 +647,7 @@ export default function Neuronpage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-bold text-gray-900 mb-2">Sign in required</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 text-base">
-              You've reached the maximum number of queries for anonymous users. Please sign in to continue asking questions and enjoy unlimited access.
+              You&apos;ve reached the maximum number of queries for anonymous users. Please sign in to continue asking questions and enjoy unlimited access.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6">
