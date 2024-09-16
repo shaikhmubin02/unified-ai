@@ -11,7 +11,9 @@ export interface IChatHistory extends Document {
   messages: IMessage[]
   createdAt: Date
   updatedAt: Date
-  isTitleEdited: boolean  // New field
+  isTitleEdited: boolean
+  isShared: boolean
+  sharedFromShareId?: string
 }
 
 const MessageSchema: Schema = new Schema({
@@ -34,15 +36,24 @@ const ChatHistorySchema: Schema = new Schema({
   },
   title: {
     type: String,
-    default: 'New Chat'
+    default: 'New Chat',
+    required: true
   },
   messages: {
     type: [MessageSchema],
     default: []
   },
-  isTitleEdited: {  // New field
+  isTitleEdited: {
     type: Boolean,
     default: false
+  },
+  isShared: {
+    type: Boolean,
+    default: false
+  },
+  sharedFromShareId: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

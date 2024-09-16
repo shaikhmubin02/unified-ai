@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2 ,TrendingUp, Pencil, MoreVertical, Check } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -34,6 +35,8 @@ interface ChatHistory {
   createdAt: string
   updatedAt: string
   isTitleEdited: boolean
+  isShared: boolean
+  sharedFromShareId?: string
 }
 
 export default function Neuronpage() {
@@ -56,6 +59,9 @@ export default function Neuronpage() {
   const [editedMessage, setEditedMessage] = useState('')
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [editedTitle, setEditedTitle] = useState('')
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+  const [shareableLink, setShareableLink] = useState('')
+  const { toast } = useToast()
 
   useEffect(() => {
     if (isLoaded) {
@@ -65,8 +71,7 @@ export default function Neuronpage() {
           try {
             const response = await axios.get('/api/chats')
             setChatHistories(response.data)
-            // Create a new chat instead of selecting the first one
-            createNewChat()
+            // Removed createNewChat() to prevent automatic chat creation on sign-in
           } catch (error) {
             console.error('Error fetching chat histories:', error)
           }
@@ -100,7 +105,8 @@ export default function Neuronpage() {
       messages: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isTitleEdited: false
+      isTitleEdited: false,
+      isShared: false
     }])
     setCurrentChatId(anonymousChatId)
     setMessages([])
@@ -135,7 +141,8 @@ export default function Neuronpage() {
         messages: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        isTitleEdited: false
+        isTitleEdited: false,
+        isShared: false
       }
       setChatHistories(prev => [newChat, ...prev])
       setCurrentChatId(newChatId)
@@ -159,6 +166,11 @@ export default function Neuronpage() {
         return
       }
       setAnonymousQueriesCount(prev => prev + 1)
+    }
+
+    // **Create a new chat if there's no active chat**
+    if (isSignedIn && !currentChatId) {
+      await createNewChat()
     }
 
     setIsLoading(true)
@@ -258,7 +270,8 @@ export default function Neuronpage() {
             setCurrentChatId(remainingChats[0]._id)
             setMessages(remainingChats[0].messages)
           } else {
-            createNewChat()
+            setCurrentChatId(null) // No active chat
+            setMessages([])
           }
         }
       } catch (error) {
@@ -274,7 +287,8 @@ export default function Neuronpage() {
           setCurrentChatId(remainingChats[0]._id)
           setMessages(remainingChats[0].messages)
         } else {
-          createNewChat()
+          setCurrentChatId(null) // No active chat
+          setMessages([])
         }
       }
     }
@@ -387,6 +401,36 @@ export default function Neuronpage() {
       console.error('Error updating chat title:', error)
     }
   }
+
+  const handleShareChat = async (chat: ChatHistory) => {
+    try {
+      console.log('Attempting to share chat:', chat._id);
+      // Open the share dialog
+      setIsShareDialogOpen(true);
+
+      // Make API call to generate a shareable link
+      const response = await axios.post('/api/chats/share', { chatId: chat._id });
+
+      console.log('Share API response:', response.data);
+      const { shareableLink } = response.data;
+      setShareableLink(shareableLink);
+    } catch (error) {
+      console.error('Error sharing chat:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate shareable link.',
+        variant: 'destructive',
+      });
+      setIsShareDialogOpen(false);
+    }
+  };
+
+  // Reset shareable link when dialog closes
+  useEffect(() => {
+    if (!isShareDialogOpen) {
+      setShareableLink('');
+    }
+  }, [isShareDialogOpen]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -605,6 +649,13 @@ export default function Neuronpage() {
                             <Trash2 className='h-4 w-4 ml-1 mr-2' />
                             Delete
                           </DropdownMenuItem>
+                          {/* New Share Option */}
+                          {!chat.isShared && (
+                            <DropdownMenuItem onClick={() => handleShareChat(chat)}>
+                              <Share2 className='h-4 w-4 ml-1 mr-2' />
+                              Share
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </>
@@ -691,56 +742,109 @@ export default function Neuronpage() {
                           ))
                         ) : (
                           <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
-                            <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
-                            <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
-                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
-                            <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                  {randomQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                  {scienceQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
-                                  {technologyQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                            </div>
+                            {/* **Show Marquee and Initial Interface Only for Signed-In Users** */}
+                            {isSignedIn && (
+                              <>
+                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
+                                <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
+                                <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
+                                <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                      {randomQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                      {scienceQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
+                                      {technologyQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                             {!isSignedIn && (
-                              <SignInButton mode="modal">
-                                <p className="text-xs mt-4 text-blue-500 cursor-pointer hover:underline px-4 md:px-0">
-                                  Sign in to save chat history and set AI memory
-                                </p>
-                              </SignInButton>
+                              <>
+                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
+                                <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
+                                <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
+                                <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                      {randomQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                      {scienceQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                  <div className="relative">
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
+                                      {technologyQuestions.map((item, index) => (
+                                        <div
+                                          key={index}
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          onClick={() => handleQuestionClick(item.question)}
+                                        >
+                                          {item.emoji} {item.question}
+                                        </div>
+                                      ))}
+                                    </Marquee>
+                                  </div>
+                                </div>
+                                {!isSignedIn && (
+                                  <SignInButton mode="modal">
+                                    <p className="text-xs mt-4 text-blue-500 cursor-pointer hover:underline px-4 md:px-0">
+                                      Sign in to save chat history and set AI memory
+                                    </p>
+                                  </SignInButton>
+                                )}
+                              </>
                             )}
                           </div>
                         )}
@@ -834,6 +938,76 @@ export default function Neuronpage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Dialog */}
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent className="sm:max-w-[450px] bg-white border-none shadow-lg rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
+              <Share2 className="h-6 w-6 mr-2 text-blue-500" />
+              Share Chat
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Share this chat by copying the link below and sending it to others.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-2">Shareable Link</p>
+              <div className="flex items-center">
+                <Input
+                  type="text"
+                  value={shareableLink}
+                  readOnly
+                  className="flex-1 mr-2 text-gray-600 bg-white border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareableLink)
+                    toast({
+                      title: 'Link Copied',
+                      description: 'The shareable link has been copied to your clipboard.',
+                    })
+                    // Change button text to "Link Copied"
+                    const button = document.querySelector('.copy-link-button') as HTMLButtonElement;
+                    if (button) {
+                      button.innerHTML = '<svg class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Link Copied';
+                      button.disabled = true;
+                      setTimeout(() => {
+                        button.innerHTML = '<svg class="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>Copy Link';
+                        button.disabled = false;
+                      }, 2000);
+                    }
+                  }}
+                  className="whitespace-nowrap text-gray-600 copy-link-button"
+                >
+                  <Clipboard className="h-4 w-4 mr-2" />
+                  Copy Link
+                </Button>
+              </div>
+            </div>
+            <div className="mt-6 text-sm text-gray-500">
+              <p className="flex items-center mb-2">
+                <Info className="h-4 w-4 mr-2 text-blue-500" />
+                This link allows others to view this chat.
+              </p>
+              <p className="flex items-center">
+                <Lock className="h-4 w-4 mr-2 text-green-500" />
+                Your chat history and personal information remain private.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button onClick={() => setIsShareDialogOpen(false)} variant="ghost" className="mr-2 text-gray-600">
+              Cancel
+            </Button>
+            <Button onClick={() => setIsShareDialogOpen(false)} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
