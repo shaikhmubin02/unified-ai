@@ -541,7 +541,7 @@ export default function Neuronpage() {
 
       {/* History Sidebar - Only show for signed-in users */}
       {isSignedIn && (
-        <div className={`w-56 ml-12 bg-white border-r border-gray-200 fixed h-full overflow-y-auto transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
+        <div className={`w-56 lg:ml-12 bg-white border-r border-gray-200 fixed h-full transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
           <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
             <p className="text-gray-600 font-serif font-normal">Previous Chats</p>
             <Button
@@ -553,7 +553,7 @@ export default function Neuronpage() {
               <ChevronLeft className="h-4 w-4 text-gray-600" />
             </Button>
           </div>
-          <nav className="flex-1 overflow-y-auto p-4">
+          <nav className="flex-1 overflow-y-auto p-4 scrollbar-hide">
             <div className="space-y-2">
               {chatHistories.map(chat => (
                 <div key={chat._id} className="flex items-center space-x-2">
