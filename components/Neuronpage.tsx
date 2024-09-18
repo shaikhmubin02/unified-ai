@@ -441,7 +441,7 @@ export default function Neuronpage() {
         {/* Top section */}
         <div className="flex flex-col items-center space-y-4">
           <div className="flex-1 flex items-center justify-center mt-3">
-            <Sparkles className="h-6 w-6 text-blue-500" />
+            <Sparkles className="h-6 w-6 text-green-500" />
           </div>
           <div className="w-8 h-px bg-gray-200 mb-2"></div>
           <TooltipProvider>
@@ -450,7 +450,7 @@ export default function Neuronpage() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                   onClick={handleHistoryOrNewChat}
                 >
                   <PlusCircle className="h-4 w-4 text-gray-600" />
@@ -466,7 +466,7 @@ export default function Neuronpage() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                   onClick={handleHistoryClick}
                 >
                   <History className="h-4 w-4 text-gray-600" />
@@ -490,7 +490,7 @@ export default function Neuronpage() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                        className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                       >
                         <Brain className="h-4 w-4 text-gray-600" />
                         <span className="sr-only">Memory</span>
@@ -521,7 +521,7 @@ export default function Neuronpage() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                    className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                     onClick={() => {/* Add trending topics functionality */}}
                   >
                     <TrendingUp className="h-4 w-4 text-gray-600" />
@@ -537,7 +537,7 @@ export default function Neuronpage() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                    className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                   >
                     <Bookmark className="h-4 w-4 text-gray-600" />
                     <span className="sr-only">Bookmarks</span>
@@ -562,7 +562,7 @@ export default function Neuronpage() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                      className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                     >
                       <CircleEllipsisIcon className="h-5 w-5 text-gray-600" />
                       <span className="sr-only">Navigation</span>
@@ -571,15 +571,15 @@ export default function Neuronpage() {
                   <DropdownMenuContent align="end" className="w-56 ml-2 text-sm font-mono text-gray-600">
                     <DropdownMenuItem onClick={() => router.push('/landing')}>
                       🏠
-                      Landing Page
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/docs')}>
-                      📃
-                      Documentation
+                      About
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/landing/pricing')}>
                       💲
                       Pricing
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/docs')}>
+                      📃
+                      Documentation
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/landing/blog')}>
                       📖
@@ -598,7 +598,7 @@ export default function Neuronpage() {
                   <UserButton />
                 ) : (
                   <SignInButton mode="modal">
-                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors">
+                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors">
                       <User className="h-4 w-4 text-gray-600" />
                     </Button>
                   </SignInButton>
@@ -732,7 +732,7 @@ export default function Neuronpage() {
                                 <div className="flex items-start space-x-2">
                                   {/* AI Profile Picture */}
                                   <div className="flex-shrink-0 w-5 h-5 mt-1">
-                                    <Sparkles className="h-4 w-4 text-blue-500" />
+                                    <Sparkles className="h-4 w-4 text-green-500" />
                                   </div>
                                   <div className="relative group">
                                     <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -741,7 +741,7 @@ export default function Neuronpage() {
                               ) : (
                                 <div className="flex items-start space-x-2">
                                   {/* User Message aligned to the right */}
-                                  <div className={`inline-block p-2 rounded-lg bg-blue-100 relative group`}>
+                                  <div className={`inline-block p-2 rounded-lg bg-green-100 relative group`}>
                                     {editingMessageId === index ? (
                                       <div className="flex items-center">
                                         <Input
@@ -774,7 +774,7 @@ export default function Neuronpage() {
                             {/* **Show Marquee and Initial Interface Only for Signed-In Users** */}
                             {isSignedIn && (
                               <>
-                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
+                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
                                 <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
                                 <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
                                 <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
@@ -783,7 +783,7 @@ export default function Neuronpage() {
                                       {randomQuestions.map((item, index) => (
                                         <div
                                           key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
                                           onClick={() => handleQuestionClick(item.question)}
                                         >
                                           {item.emoji} {item.question}
@@ -822,7 +822,7 @@ export default function Neuronpage() {
                             )}
                             {!isSignedIn && (
                               <>
-                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
+                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
                                 <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
                                 <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
                                 <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
@@ -868,7 +868,7 @@ export default function Neuronpage() {
                                 </div>
                                 {!isSignedIn && (
                                   <SignInButton mode="modal">
-                                    <p className="text-xs mt-4 text-blue-500 cursor-pointer hover:underline px-4 md:px-0">
+                                    <p className="text-xs mt-4 text-green-500 cursor-pointer hover:underline px-4 md:px-0">
                                       Sign in to save chat history and set AI memory
                                     </p>
                                   </SignInButton>
@@ -904,7 +904,7 @@ export default function Neuronpage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-blue-500 transition-colors text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={isSearchDisabled}
               />
               <Button 
@@ -938,7 +938,7 @@ export default function Neuronpage() {
           <AlertDialogFooter className="mt-6">
             <SignInButton mode="modal">
               <AlertDialogAction 
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 ease-in-out"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 ease-in-out"
               >
                 Sign In
               </AlertDialogAction>
@@ -959,7 +959,7 @@ export default function Neuronpage() {
           <AlertDialogFooter className="mt-6">
             <SignInButton mode="modal">
               <AlertDialogAction 
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 ease-in-out"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 ease-in-out"
               >
                 Sign In
               </AlertDialogAction>
@@ -973,7 +973,7 @@ export default function Neuronpage() {
         <DialogContent className="sm:max-w-[450px] bg-white border-none shadow-lg rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
-              <Share2 className="h-6 w-6 mr-2 text-blue-500" />
+              <Share2 className="h-6 w-6 mr-2 text-green-500" />
               Share Chat
             </DialogTitle>
             <DialogDescription className="text-gray-600">
@@ -988,7 +988,7 @@ export default function Neuronpage() {
                   type="text"
                   value={shareableLink}
                   readOnly
-                  className="flex-1 mr-2 text-gray-600 bg-white border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  className="flex-1 mr-2 text-gray-600 bg-white border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                 />
                 <Button
                   variant="outline"
@@ -1018,11 +1018,11 @@ export default function Neuronpage() {
             </div>
             <div className="mt-6 text-sm text-gray-500">
               <p className="flex items-center mb-2">
-                <Info className="h-4 w-4 mr-2 text-blue-500" />
+                <Info className="h-4 w-4 mr-2 text-green-500" />
                 This link allows others to view this chat.
               </p>
               <p className="flex items-center">
-                <Lock className="h-4 w-4 mr-2 text-green-500" />
+                <Lock className="h-4 w-4 mr-2 text-blue-500" />
                 Your chat history and personal information remain private.
               </p>
             </div>
@@ -1031,7 +1031,7 @@ export default function Neuronpage() {
             <Button onClick={() => setIsShareDialogOpen(false)} variant="ghost" className="mr-2 text-gray-600">
               Cancel
             </Button>
-            <Button onClick={() => setIsShareDialogOpen(false)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={() => setIsShareDialogOpen(false)} className="bg-green-600 hover:bg-green-700 text-white">
               Done
             </Button>
           </DialogFooter>

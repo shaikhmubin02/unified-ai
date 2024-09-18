@@ -27,7 +27,7 @@ export function MemoryInput({ initialMemory, onSave, maxCharacters }: MemoryInpu
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2 text-blue-600">
+      <div className="flex items-center space-x-2 text-green-600">
         <Brain className="h-5 w-5" />
         <span className="font-semibold">AI Memory Input</span>
       </div>
@@ -36,11 +36,11 @@ export function MemoryInput({ initialMemory, onSave, maxCharacters }: MemoryInpu
         value={memory}
         onChange={handleChange}
         rows={6}
-        className="w-full p-3 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+        className="w-full p-3 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 ease-in-out"
       />
       <div className="flex justify-between items-center text-sm text-gray-500">
         <span>{memory.length} / {maxCharacters} characters</span>
-        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out">
+        <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out">
           Save Memory
         </Button>
       </div>
