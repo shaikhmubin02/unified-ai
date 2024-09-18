@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from 'next/navigation'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -62,6 +63,7 @@ export default function Neuronpage() {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [shareableLink, setShareableLink] = useState('')
   const { toast } = useToast()
+  const router = useRouter()
 
   useEffect(() => {
     if (isLoaded) {
@@ -552,15 +554,42 @@ export default function Neuronpage() {
         {/* Bottom section */}
         <div className="mt-auto flex flex-col items-center space-y-4">
           <TooltipProvider>
+            {/* New Navigation Menu Dropdown */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors">
-                  <Settings className="h-4 w-4 text-gray-600" />
-                  <span className="sr-only">Settings</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="w-8 h-8 rounded-full hover:bg-blue-50 transition-colors"
+                    >
+                      <CircleEllipsisIcon className="h-5 w-5 text-gray-600" />
+                      <span className="sr-only">Navigation</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 ml-2 text-sm font-mono text-gray-600">
+                    <DropdownMenuItem onClick={() => router.push('/landing')}>
+                      🏠
+                      Landing Page
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/docs')}>
+                      📃
+                      Documentation
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/landing/pricing')}>
+                      💲
+                      Pricing
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/landing/blog')}>
+                      📖
+                      Blog
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>Settings</p>
+                <p>Navigation</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
