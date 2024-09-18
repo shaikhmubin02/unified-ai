@@ -27,7 +27,7 @@ export default function Changelog() {
                                         <p className="text-emerald-400 mb-3 text-sm">Welcome to the future of AI-assisted research</p>
                                         <ul className="space-y-1 text-sm">
                                             <li className="flex items-center">👤 Onboarding revamp</li>
-                                            <li className="flex items-center">🔧 Fixed "Continue generating" feature</li>
+                                            <li className="flex items-center">🔧 Fixed &quot;Continue generating&quot; feature</li>
                                             <li className="flex items-center">🖥️ Model Choice on Neuron AI Server</li>
                                             <li className="flex items-center">⌨️ Improved shortcuts</li>
                                             <li className="flex items-center">❓ Improved help window</li>
