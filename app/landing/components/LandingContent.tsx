@@ -72,7 +72,7 @@ export default function LandingContent() {
                 Dive deep into any topic.
               </h2>
               <p className="text-lg text-gray-600">
-                Explore complex subjects with Neuron AI's advanced knowledge graph. Our AI understands context and relationships between concepts.
+                Explore complex subjects with Neuron AI&apos;s advanced knowledge graph. Our AI understands context and relationships between concepts.
               </p>
               <p className="text-lg text-gray-600">
                 Discover connections, follow your curiosity, and gain comprehensive insights on any subject{' '}

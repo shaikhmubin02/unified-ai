@@ -116,9 +116,9 @@ export default function DocumentationSection() {
               {activeSection.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
             <div className="prose prose-emerald max-w-none">
-              <p>Welcome to the Neuron AI documentation. Here you'll find comprehensive guides and documentation to help you start working with Neuron AI as quickly as possible, as well as support if you get stuck. Let's jump right in!</p>
+              <p>Welcome to the Neuron AI documentation. Here you&apos;ll find comprehensive guides and documentation to help you start working with Neuron AI as quickly as possible, as well as support if you get stuck. Let&apos;s jump right in!</p>
               <h2>Getting Started</h2>
-              <p>To get started with Neuron AI, you'll need to...</p>
+              <p>To get started with Neuron AI, you&apos;ll need to...</p>
               {/* Add more content here based on the active section */}
             </div>
           </div>

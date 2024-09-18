@@ -57,7 +57,7 @@ export default function Changelog() {
                                     <div className="flex-grow">
                                         <h3 className="text-xl font-bold mb-3 flex items-center">
                                             <span className="mr-2 text-yellow-400">⚡</span>
-                                            Model switch feature & Bug Fixes
+                                            Model switch feature &amp; Bug Fixes
                                         </h3>
                                         <ul className="space-y-1 text-sm">
                                             <li className="flex items-center">💻 Huge refactor & Performance improvements</li>
