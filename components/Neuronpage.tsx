@@ -729,13 +729,59 @@ export default function Neuronpage() {
                               ref={message.role === 'assistant' && index === messages.length - 1 ? latestAnswerRef : null}
                             >
                               {message.role === 'assistant' ? (
-                                <div className="flex items-start space-x-2">
+                                <div className="flex items-start space-x-2 relative">
                                   {/* AI Profile Picture */}
                                   <div className="flex-shrink-0 w-5 h-5 mt-1">
                                     <Sparkles className="h-4 w-4 text-green-500" />
                                   </div>
-                                  <div className="relative group">
-                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                  <div className="relative w-full">
+                                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
+                                      {message.content}
+                                    </div>
+                                    {/* Buttons container */}
+                                    <div className="absolute bottom-0 left-0 flex space-x-2">
+                                      {/* Copy Button */}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(message.content)
+                                          toast({
+                                            title: 'Copied!',
+                                            description: 'The message has been copied to your clipboard.',
+                                          })
+                                          // Change button text to "Copied!"
+                                          const button = document.querySelector(`#copy-button-${index}`) as HTMLButtonElement;
+                                          if (button) {
+                                            const originalContent = button.innerHTML;
+                                            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-600"><path d="M20 6 9 17l-5-5"/></svg>';
+                                            button.disabled = true;
+                                            setTimeout(() => {
+                                              button.innerHTML = originalContent;
+                                              button.disabled = false;
+                                            }, 2000);
+                                          }
+                                        }}
+                                        aria-label="Copy message"
+                                        id={`copy-button-${index}`}
+                                      >
+                                        <Clipboard className="h-4 w-4 text-gray-600" />
+                                      </Button>
+                                      {/* Model Section Button */}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5"
+                                        onClick={() => {
+                                          // Add functionality for model section
+                                          console.log('Model section clicked')
+                                        }}
+                                        aria-label="Model section"
+                                      >
+                                        <Info className="h-4 w-4 text-gray-600" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                               ) : (
