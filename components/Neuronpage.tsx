@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -328,6 +328,20 @@ export default function Neuronpage() {
       setIsSignInAlertOpen(true)
     }
   }
+
+  const handleReRun = (index: number) => {
+    const messageToReRun = messages[index];
+    console.log('Message to re-run:', messageToReRun);
+    if (messageToReRun.role === 'user') {
+      console.log('Re-running user message:', messageToReRun.content);
+      handleSearch(messageToReRun.content, index);
+    } else if (index > 0 && messages[index - 1].role === 'user') {
+      console.log('Re-running previous user message:', messages[index - 1].content);
+      handleSearch(messages[index - 1].content, index - 1);
+    } else {
+      console.log('Cannot re-run: no user message found');
+    }
+  };
 
   const randomQuestions = [
     { emoji: "🌍", question: "What's the largest country by area?" },
@@ -771,6 +785,19 @@ export default function Neuronpage() {
                                       >
                                         <Clipboard className="h-4 w-4 text-gray-600" />
                                       </Button>
+
+                                      {/*re run button  */}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5"
+                                        onClick={() => {
+                                          handleReRun(index);
+                                        }}
+                                      >
+                                        <Repeat className="h-4 w-4 text-gray-600" />
+                                      </Button>
+
                                       {/* Model Selection Button */}
                                       <Select value={selectedModel} onValueChange={setSelectedModel}>
                                         <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
