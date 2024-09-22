@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -64,6 +65,7 @@ export default function Neuronpage() {
   const [shareableLink, setShareableLink] = useState('')
   const { toast } = useToast()
   const router = useRouter()
+  const [selectedModel, setSelectedModel] = useState("llama3-8b-8192")
 
   useEffect(() => {
     if (isLoaded) {
@@ -198,7 +200,8 @@ export default function Neuronpage() {
               ...updatedMessages
             ] 
           : updatedMessages,
-        userId: isSignedIn ? user.id : 'anonymous'
+        userId: isSignedIn ? user.id : 'anonymous',
+        model: selectedModel
       })
       const assistantMessage: Message = { role: 'assistant', content: response.data.content }
       const finalMessages = [...updatedMessages, assistantMessage]
@@ -768,19 +771,20 @@ export default function Neuronpage() {
                                       >
                                         <Clipboard className="h-4 w-4 text-gray-600" />
                                       </Button>
-                                      {/* Model Section Button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-5 w-5"
-                                        onClick={() => {
-                                          // Add functionality for model section
-                                          console.log('Model section clicked')
-                                        }}
-                                        aria-label="Model section"
-                                      >
-                                        <Info className="h-4 w-4 text-gray-600" />
-                                      </Button>
+                                      {/* Model Selection Button */}
+                                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                                        <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
+                                          <SelectValue>
+                                            <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
+                                              <Package className="h-4 w-4 mt-2 text-gray-600" />
+                                            </Button>
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama</SelectItem>
+                                          <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
+                                        </SelectContent>
+                                      </Select>
                                     </div>
                                   </div>
                                 </div>

@@ -8,7 +8,7 @@ import Groq from "groq-sdk"
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(req: NextRequest) {
-  const { messages, userId } = await req.json()
+  const { messages, userId, model } = await req.json()
   const auth = getAuth(req)
 
   // Allow both authenticated and anonymous requests
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     const chatCompletion = await groq.chat.completions.create({
       messages: auth.userId ? [{ role: 'system', content: memory }, ...messages] : messages,
-      model: "llama-3.1-70b-versatile",
+      model: model, // Use the selected model
     })
 
     const content = chatCompletion.choices[0]?.message?.content || ""
