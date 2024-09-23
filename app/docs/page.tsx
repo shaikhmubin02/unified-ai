@@ -1,22 +1,29 @@
 'use client'
 
 import { useState } from 'react';
-import { Search, Settings, Zap, PlayCircle, Keyboard, CheckSquare, Database, FileText, GitBranch, Sun, ChevronRight, ExternalLink, Sparkles, StepBack, ChevronLeft } from 'lucide-react';
+import { Search, Settings, Zap, PlayCircle, Keyboard, CheckSquare, Database, FileText, GitBranch, Sun, ChevronRight, ExternalLink, Sparkles, StepBack, ChevronLeft, Menu } from 'lucide-react';
 import Footer from '../landing/components/Footer';
 
 export default function DocumentationSection() {
   const [activeSection, setActiveSection] = useState('core-features');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-200 py-4 px-6 flex items-center justify-between bg-white shadow-sm">
         <div className="flex items-center space-x-4">
           <Sparkles className="h-6 w-6 text-emerald-500" />
-          <span className="font-bold text-xl">Neuron AI</span>
-          <span className="text-emerald-500">Docs</span>
+          <span className="font-bold text-xl hidden sm:inline">Neuron AI</span>
+          <span className="text-emerald-500 hidden sm:inline">Docs</span>
         </div>
         <div className="flex items-center space-x-4">
-          <a href="/landing" className="text-gray-500 hover:text-emerald-500 transition-colors">
+          <button
+            className="sm:hidden text-gray-500 hover:text-emerald-500 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <a href="/landing" className="text-gray-500 hover:text-emerald-500 transition-colors hidden sm:inline-block">
             <ChevronLeft />
           </a>
           <a href="/" className="text-gray-500 hover:text-emerald-500 transition-colors">
@@ -24,7 +31,7 @@ export default function DocumentationSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           </a>
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <input
               type="text"
               placeholder="Search docs"
@@ -34,8 +41,8 @@ export default function DocumentationSection() {
           </div>
         </div>
       </header>
-      <div className="flex">
-        <nav className="w-64 p-6 border-r border-gray-200 h-[calc(100vh-4rem)] overflow-y-auto">
+      <div className="flex flex-col sm:flex-row">
+        <nav className={`w-full sm:w-64 p-6 border-r border-gray-200 h-auto sm:h-[calc(100vh-4rem)] overflow-y-auto ${isMobileMenuOpen ? 'block' : 'hidden'} sm:block`}>
           <div className="space-y-4">
             <a 
               href="#" 
@@ -104,7 +111,7 @@ export default function DocumentationSection() {
             </a>
           </div>
         </nav>
-        <main className="flex-1 p-8 overflow-y-auto h-[calc(100vh-4rem)]">
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto h-[calc(100vh-4rem)]">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center text-sm text-gray-500 mb-4">
               <a href="#" className="hover:text-emerald-500 transition-colors">Home</a>

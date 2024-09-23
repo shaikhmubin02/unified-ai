@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -24,6 +24,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface Message {
   role: 'user' | 'assistant'
@@ -66,6 +67,7 @@ export default function Neuronpage() {
   const { toast } = useToast()
   const router = useRouter()
   const [selectedModel, setSelectedModel] = useState("llama3-8b-8192")
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (isLoaded) {
@@ -453,7 +455,83 @@ export default function Neuronpage() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Main Sidebar */}
+      {/* Mobile Sidebar */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden fixed top-2 right-2 z-30 text-black hover:bg-gray-100 rounded-full transition-colors duration-200"
+          >
+            <SquareChevronRight className="h-5 w-5  text-gray-700" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-[250px] sm:w-[300px] bg-white p-0">
+          <div className="flex flex-col h-full">
+            {/* User section */}
+            <div className="py-6 px-4 bg-gradient-to-r from-green-400 to-blue-500">
+              {isSignedIn ? (
+                <div className="">
+                  <UserButton />
+                </div>
+              ) : (
+                <SignInButton mode="modal">
+                  <Button variant="outline" className="w-full justify-start  text-white bg-transparent border-white hover:bg-white hover:text-green-500 transition-colors duration-200">
+                    <User className="mr-2 h-4 w-4" />
+                    Sign In
+                  </Button>
+                </SignInButton>
+              )}
+            </div>
+            
+            {/* Main menu items */}
+            <div className="flex-1 py-4 px-2 space-y-1">
+              {[
+                { icon: PlusCircle, label: "New Chat", onClick: handleHistoryOrNewChat },
+                { icon: History, label: "History", onClick: handleHistoryClick },
+                { icon: Brain, label: "Memory", onClick: () => setIsMemoryDialogOpen(true) },
+                { icon: TrendingUp, label: "Trending Topics", onClick: () => {} },
+                { icon: Bookmark, label: "Bookmarks", onClick: () => {} },
+              ].map((item, index) => (
+                <Button 
+                  key={index}
+                  variant="ghost" 
+                  className="w-full justify-start text-gray-700 hover:bg-gray-100 hover:text-green-500 transition-colors duration-200"
+                  onClick={() => {
+                    item.onClick()
+                    setIsMobileSidebarOpen(false)
+                  }}
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Button>
+              ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-gray-100 hover:text-green-500 transition-colors duration-200">
+                    <CircleEllipsisIcon className="mr-2 h-4 w-4" />
+                    Navigation
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {[
+                    { emoji: "🏠", label: "About", path: "/landing" },
+                    { emoji: "💲", label: "Pricing", path: "/landing/pricing" },
+                    { emoji: "📃", label: "Documentation", path: "/docs" },
+                    { emoji: "📖", label: "Blog", path: "/landing/blog" },
+                  ].map((item, index) => (
+                    <DropdownMenuItem key={index} onClick={() => router.push(item.path)}>
+                      {item.emoji} {item.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Sidebar (hidden on mobile) */}
       <div className="w-12 bg-white border-r border-gray-200 p-2 hidden md:flex flex-col items-center shadow-sm fixed h-full z-20">
         {/* Top section */}
         <div className="flex flex-col items-center space-y-4">
