@@ -14,12 +14,12 @@ export function Feedback() {
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     await handleSubmit(e)
+    setIsFeedbackDialogOpen(false)
     if (state.succeeded) {
       toast({
         title: 'Thank you!',
         description: 'Your feedback has been submitted successfully.',
       })
-      setIsFeedbackDialogOpen(false)
     }
   }
 
