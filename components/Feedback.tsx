@@ -25,7 +25,7 @@ export function Feedback() {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4 z-50 hidden sm:block">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -57,6 +57,7 @@ export function Feedback() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit}>
+            <input type="hidden" name="_subject" value="Feedback or Suggestion" />
             <div className="mt-6">
               <textarea
                 id="message"
