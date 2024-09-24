@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Feedback } from './Feedback'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -1266,6 +1267,9 @@ export default function Neuronpage() {
           </div>
         </div>
       </div>
+
+      {/* Feedback Component */}
+      <Feedback />
 
       {/* Alert Dialog for maximum queries reached */}
       <AlertDialog open={isAlertDialogOpen} onOpenChange={setIsAlertDialogOpen}>
