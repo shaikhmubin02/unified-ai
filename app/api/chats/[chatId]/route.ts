@@ -39,7 +39,7 @@ export async function PUT(request: NextRequest, { params }: { params: { chatId: 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { title, messages, isTitleEdited } = await request.json()
+  const { title, messages, isTitleEdited, isBookmarked } = await request.json()
 
   try {
     await dbConnect()
@@ -48,6 +48,7 @@ export async function PUT(request: NextRequest, { params }: { params: { chatId: 
       ...(title && { title }),
       ...(messages && { messages }),
       ...(isTitleEdited !== undefined && { isTitleEdited }),
+      ...(isBookmarked !== undefined && { isBookmarked }), // Allow updating isBookmarked
       updatedAt: new Date()
     }
 

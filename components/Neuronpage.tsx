@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock, BookmarkCheck } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -39,6 +39,7 @@ interface ChatHistory {
   updatedAt: string
   isTitleEdited: boolean
   isShared: boolean
+  isBookmarked: boolean // Added field
   sharedFromShareId?: string
 }
 
@@ -49,6 +50,7 @@ export default function Neuronpage() {
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([])
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false)
+  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false) // New state for Bookmark Sidebar
   const [memory, setMemory] = useState('')
   const [isMemoryDialogOpen, setIsMemoryDialogOpen] = useState(false)
   const { isSignedIn, user, isLoaded } = useUser()
@@ -114,7 +116,8 @@ export default function Neuronpage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isTitleEdited: false,
-      isShared: false
+      isShared: false,
+      isBookmarked: false // Initialize as not bookmarked
     }])
     setCurrentChatId(anonymousChatId)
     setMessages([])
@@ -122,6 +125,7 @@ export default function Neuronpage() {
     setAnonymousQueriesCount(0)
     setIsSearchDisabled(false)
     setIsHistorySidebarOpen(false)
+    setIsBookmarkSidebarOpen(false) // Close bookmark sidebar
   }
 
   const createNewChat = async () => {
@@ -150,7 +154,8 @@ export default function Neuronpage() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isTitleEdited: false,
-        isShared: false
+        isShared: false,
+        isBookmarked: false
       }
       setChatHistories(prev => [newChat, ...prev])
       setCurrentChatId(newChatId)
@@ -161,6 +166,7 @@ export default function Neuronpage() {
   const handleNewChat = () => {
     createNewChat()
     setIsHistorySidebarOpen(true)
+    setIsBookmarkSidebarOpen(false) // Close bookmark sidebar if open
   }
 
   const handleSearch = async (searchQuery?: string, editedMessageIndex?: number) => {
@@ -268,6 +274,16 @@ export default function Neuronpage() {
 
   const toggleHistorySidebar = () => {
     setIsHistorySidebarOpen(!isHistorySidebarOpen)
+    if (!isHistorySidebarOpen) {
+      setIsBookmarkSidebarOpen(false) // Close bookmark sidebar when opening history sidebar
+    }
+  }
+
+  const toggleBookmarkSidebar = () => {
+    setIsBookmarkSidebarOpen(!isBookmarkSidebarOpen)
+    if (!isBookmarkSidebarOpen) {
+      setIsHistorySidebarOpen(false) // Close history sidebar when opening bookmark sidebar
+    }
   }
 
   const deleteChat = async (chatId: string) => {
@@ -337,6 +353,14 @@ export default function Neuronpage() {
     }
   }
 
+  const handleBookmarkClick = () => {
+    if (isSignedIn) {
+      toggleBookmarkSidebar()
+    } else {
+      setIsSignInAlertOpen(true)
+    }
+  }
+
   const handleReRun = (index: number) => {
     const messageToReRun = messages[index];
     console.log('Message to re-run:', messageToReRun);
@@ -350,6 +374,28 @@ export default function Neuronpage() {
       console.log('Cannot re-run: no user message found');
     }
   };
+
+  const handleBookmark = async (chat: ChatHistory) => {
+    try {
+      const response = await axios.put(`/api/chats/${chat._id}`, {
+        isBookmarked: !chat.isBookmarked
+      })
+      setChatHistories(prev => prev.map(c => 
+        c._id === chat._id ? { ...c, isBookmarked: response.data.isBookmarked } : c
+      ))
+      toast({
+        title: chat.isBookmarked ? 'Removed Bookmark' : 'Bookmarked',
+        description: chat.isBookmarked ? 'Chat has been removed from bookmarks.' : 'Chat has been added to bookmarks.',
+      })
+    } catch (error) {
+      console.error('Error updating bookmark:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update bookmark.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const randomQuestions = [
     { emoji: "🌍", question: "What's the largest country by area?" },
@@ -495,9 +541,10 @@ export default function Neuronpage() {
               {[
                 { icon: PlusCircle, label: "New Chat", onClick: handleHistoryOrNewChat },
                 { icon: History, label: "History", onClick: handleHistoryClick },
+                { icon: Bookmark, label: "Bookmarks", onClick: handleBookmarkClick }, // Added Bookmark
                 { icon: Brain, label: "Memory", onClick: () => setIsMemoryDialogOpen(true) },
                 { icon: TrendingUp, label: "Trending Topics", onClick: () => {} },
-                { icon: Bookmark, label: "Bookmarks", onClick: () => {} },
+                { icon: Bookmark, label: "Bookmarks", onClick: handleBookmarkClick }, // Duplicate removed
               ].map((item, index) => (
                 <Button 
                   key={index}
@@ -558,7 +605,7 @@ export default function Neuronpage() {
                   <span className="sr-only">New Chat</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                 <p>New Chat</p>
               </TooltipContent>
             </Tooltip>
@@ -574,7 +621,7 @@ export default function Neuronpage() {
                   <span className="sr-only">History</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                 <p>History</p>
               </TooltipContent>
             </Tooltip>
@@ -613,7 +660,7 @@ export default function Neuronpage() {
                     </DialogContent>
                   </Dialog>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                   <p>Memory</p>
                 </TooltipContent>
               </Tooltip>
@@ -629,25 +676,26 @@ export default function Neuronpage() {
                     <span className="sr-only">Trending Topics</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">
+                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                   <p>Trending Topics</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                  >
-                    <Bookmark className="h-4 w-4 text-gray-600" />
-                    <span className="sr-only">Bookmarks</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>Bookmarks</p>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
+                  onClick={handleBookmarkClick} // Bookmark Button Click Handler
+                >
+                  <Bookmark className="h-4 w-4 text-gray-600" />
+                  <span className="sr-only">Bookmarks</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
+                <p>Bookmarks</p>
+              </TooltipContent>
+            </Tooltip>
             </TooltipProvider>
           </nav>
         </div>
@@ -669,7 +717,7 @@ export default function Neuronpage() {
                       <span className="sr-only">Navigation</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 ml-2 text-sm font-mono text-gray-600">
+                  <DropdownMenuContent align="end" className='font-mono'>
                     <DropdownMenuItem onClick={() => router.push('/landing')}>
                       🏠
                       About
@@ -689,7 +737,7 @@ export default function Neuronpage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                 <p>Navigation</p>
               </TooltipContent>
             </Tooltip>
@@ -705,7 +753,7 @@ export default function Neuronpage() {
                   </SignInButton>
                 )}
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
                 <p>{isSignedIn ? 'Account' : 'Sign In'}</p>
               </TooltipContent>
             </Tooltip>
@@ -775,23 +823,130 @@ export default function Neuronpage() {
                             <Edit2 className='h-4 w-4 ml-1 mr-2' />
                             Rename
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleBookmark(chat)} className="text-gray-600">
+                            {chat.isBookmarked ? (
+                              <>
+                                <BookmarkCheck className='h-4 w-4 ml-1 mr-2' />
+                                Remove Bookmark
+                              </>
+                            ) : (
+                              <>
+                                <Bookmark className='h-4 w-4 ml-1 mr-2' />
+                                Bookmark
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShareChat(chat)}>
+                            <Share2 className='h-4 w-4 ml-1 mr-2' />
+                            Share
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => deleteChat(chat._id)} className="text-red-600">
                             <Trash2 className='h-4 w-4 ml-1 mr-2' />
                             Delete
                           </DropdownMenuItem>
-                          {/* New Share Option */}
-                          {!chat.isShared && (
-                            <DropdownMenuItem onClick={() => handleShareChat(chat)}>
-                              <Share2 className='h-4 w-4 ml-1 mr-2' />
-                              Share
-                            </DropdownMenuItem>
-                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </>
                   )}
                 </div>
               ))}
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Bookmark Sidebar - Only show for signed-in users */}
+      {isSignedIn && (
+        <div className={`w-56 lg:ml-12 bg-white border-r border-gray-200 fixed h-full transition-transform duration-300 ease-in-out ${isBookmarkSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
+          <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
+            <p className="text-gray-600 font-serif font-normal">Bookmarked Chats</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleBookmarkSidebar}
+              className="h-6 w-6"
+            >
+              <ChevronLeft className="h-4 w-4 text-gray-600" />
+            </Button>
+          </div>
+          <nav className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+            <div className="space-y-2">
+              {chatHistories.filter(chat => chat.isBookmarked).map(chat => (
+                <div key={chat._id} className="flex items-center space-x-2">
+                  {editingTitleId === chat._id ? (
+                    <div className="flex-grow flex items-center">
+                      <Input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        className="mr-2 text-sm text-gray-800"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle(chat._id)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleSaveTitle(chat._id)}
+                        className="h-8 w-8"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant={chat._id === currentChatId ? "secondary" : "ghost"}
+                        className={`flex-grow justify-start text-left truncate text-sm font-thin ${
+                          chat._id === currentChatId ? 'text-gray-800 font-medium' : 'text-gray-800'
+                        }`}
+                        onClick={() => selectChat(chat._id)}
+                      >
+                        {chat.title}
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">More options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className='font-mono'>
+                          <DropdownMenuItem onClick={() => handleEditTitle(chat._id, chat.title)}>
+                            <Edit2 className='h-4 w-4 ml-1 mr-2' />
+                            Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleBookmark(chat)} className="text-gray-600">
+                            {chat.isBookmarked ? (
+                              <>
+                                <BookmarkCheck className='h-4 w-4 ml-1 mr-2' />
+                                Remove Bookmark
+                              </>
+                            ) : (
+                              <>
+                                <Bookmark className='h-4 w-4 ml-1 mr-2' />
+                                Bookmark
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShareChat(chat)}>
+                            <Share2 className='h-4 w-4 ml-1 mr-2' />
+                            Share
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => deleteChat(chat._id)} className="text-red-600">
+                            <Trash2 className='h-4 w-4 ml-1 mr-2' />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </>
+                  )}
+                </div>
+              ))}
+              {chatHistories.filter(chat => chat.isBookmarked).length === 0 && (
+                <p className="text-gray-500 text-sm text-center mt-4">No bookmarks yet.</p>
+              )}
             </div>
           </nav>
         </div>
@@ -870,7 +1025,7 @@ export default function Neuronpage() {
                                         <Clipboard className="h-4 w-4 text-gray-600" />
                                       </Button>
 
-                                      {/*re run button  */}
+                                      {/* Re-run Button */}
                                       <Button
                                         variant="ghost"
                                         size="icon"
@@ -1133,13 +1288,13 @@ export default function Neuronpage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Alert Dialog for non-signed-in users trying to access history or create a new chat */}
+      {/* Alert Dialog for non-signed-in users trying to access history or bookmark */}
       <AlertDialog open={isSignInAlertOpen} onOpenChange={setIsSignInAlertOpen}>
         <AlertDialogContent className="bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-md mx-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-bold text-gray-900 mb-2">Sign in required</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 text-base">
-              Please sign in to access chat history and create new chats.
+              Please sign in to access chat history, bookmarks, and create new chats.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6">

@@ -13,6 +13,7 @@ export interface IChatHistory extends Document {
   updatedAt: Date
   isTitleEdited: boolean
   isShared: boolean
+  isBookmarked: boolean // Added field
   sharedFromShareId?: string
 }
 
@@ -48,6 +49,10 @@ const ChatHistorySchema: Schema = new Schema({
     default: false
   },
   isShared: {
+    type: Boolean,
+    default: false
+  },
+  isBookmarked: {
     type: Boolean,
     default: false
   },

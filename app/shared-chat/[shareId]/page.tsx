@@ -123,7 +123,7 @@ export default function SharedChatPage({ params }: { params: { shareId: string }
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Sparkles className="h-8 w-8 text-blue-500 animate-pulse" />
+        <Sparkles className="h-8 w-8 text-green-500 animate-pulse" />
       </div>
     )
   }
@@ -144,12 +144,12 @@ export default function SharedChatPage({ params }: { params: { shareId: string }
           <h1 className="text-2xl font-bold text-gray-800">{chat.title}</h1>
         </div>
         <div className="flex items-center space-x-2 mt-2">
-          <Sparkles className="h-4 w-4 text-blue-500" />
+          <Sparkles className="h-4 w-4 text-green-500" />
           <p className="text-sm text-gray-600">Shared Chat</p>
           <Button
             variant="outline"
             size="sm"
-            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            className="text-green-600 border-green-600 hover:bg-green-50"
             onClick={handleAddToHistory}
             disabled={isAdding}
           >
@@ -185,7 +185,7 @@ export default function SharedChatPage({ params }: { params: { shareId: string }
                         <div className="flex items-start space-x-2">
                           {/* AI Profile Picture */}
                           <div className="flex-shrink-0 w-5 h-5 mt-1">
-                            <Sparkles className="h-4 w-4 text-blue-500" />
+                            <Sparkles className="h-4 w-4 text-green-500" />
                           </div>
                           <div className="relative group">
                             <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -194,7 +194,7 @@ export default function SharedChatPage({ params }: { params: { shareId: string }
                       ) : (
                         <div className="flex items-start space-x-2">
                           {/* User Message aligned to the right */}
-                          <div className={`inline-block p-2 rounded-lg bg-blue-100 relative group`}>
+                          <div className={`inline-block p-2 rounded-lg bg-green-100 relative group`}>
                             <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
                           </div>
                         </div>
@@ -203,7 +203,7 @@ export default function SharedChatPage({ params }: { params: { shareId: string }
                   ))
                 ) : (
                   <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8">
-                    <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-blue-500 mb-2" />
+                    <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
                     <p className="text-sm md:text-base font-medium">This chat is empty.</p>
                   </div>
                 )}
