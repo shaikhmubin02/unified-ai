@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -68,6 +68,8 @@ export default function Neuronpage() {
   const router = useRouter()
   const [selectedModel, setSelectedModel] = useState("llama3-8b-8192")
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [responseTime, setResponseTime] = useState<number | null>(null)
+  const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
 
   useEffect(() => {
     if (isLoaded) {
@@ -180,6 +182,7 @@ export default function Neuronpage() {
     }
 
     setIsLoading(true)
+    const startTime = Date.now()
     const newMessage: Message = { role: 'user', content: queryToSearch }
     let updatedMessages: Message[]
 
@@ -205,6 +208,9 @@ export default function Neuronpage() {
         userId: isSignedIn ? user.id : 'anonymous',
         model: selectedModel
       })
+      const endTime = Date.now()
+      const totalTime = endTime - startTime
+      setResponseTime(totalTime)
       const assistantMessage: Message = { role: 'assistant', content: response.data.content }
       const finalMessages = [...updatedMessages, assistantMessage]
       setMessages(finalMessages)
@@ -890,6 +896,31 @@ export default function Neuronpage() {
                                           <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
                                         </SelectContent>
                                       </Select>
+
+                                      {/* Response Time Button (Response time:) */}
+                                      {responseTime !== null && (
+                                        <div className="relative flex items-center">
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-5 w-5 p-0"
+                                            onMouseEnter={() => setExpandedResponseTime(responseTime)}
+                                            onMouseLeave={() => setExpandedResponseTime(null)}
+                                            onClick={() => setExpandedResponseTime(expandedResponseTime === responseTime ? null : responseTime)}
+                                          >
+                                            <Clock className="h-4 w-4 text-gray-600" />
+                                          </Button>
+                                          <div 
+                                            className={`absolute left-full ml-1 transition-all duration-300 ease-in-out overflow-hidden ${
+                                              expandedResponseTime === responseTime ? 'w-40 opacity-100' : 'w-0 opacity-0'
+                                            }`}
+                                          >
+                                            <span className="text-xs text-gray-600 whitespace-nowrap">
+                                              {responseTime}ms
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
