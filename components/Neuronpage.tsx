@@ -533,7 +533,7 @@ export default function Neuronpage() {
                   {[
                     { emoji: "🏠", label: "About", path: "/landing" },
                     { emoji: "💲", label: "Pricing", path: "/landing/pricing" },
-                    { emoji: "📃", label: "Documentation", path: "/docs" },
+                    { emoji: "📃", label: "Docs", path: "/docs" },
                     { emoji: "📖", label: "Blog", path: "/landing/blog" },
                   ].map((item, index) => (
                     <DropdownMenuItem key={index} onClick={() => router.push(item.path)}>
@@ -599,7 +599,7 @@ export default function Neuronpage() {
                   <Dialog open={isMemoryDialogOpen} onOpenChange={setIsMemoryDialogOpen}>
                     <DialogTrigger asChild>
                       <Button 
-                        variant="ghost" 
+                        variant="ghost"  
                         size="icon" 
                         className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
                       >
@@ -680,7 +680,7 @@ export default function Neuronpage() {
                       <span className="sr-only">Navigation</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className='font-mono'>
+                  <DropdownMenuContent align="end" className='font-mono ml-3'>
                     <DropdownMenuItem onClick={() => router.push('/landing')}>
                       🏠
                       About
@@ -691,7 +691,7 @@ export default function Neuronpage() {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/docs')}>
                       📃
-                      Documentation
+                      Docs
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/landing/blog')}>
                       📖
