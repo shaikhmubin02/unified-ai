@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowRight, X } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 interface BlogPost {
   id: string
@@ -142,7 +143,7 @@ const blogPosts: BlogPost[] = [
 function BlogPost({ post, onClick }: { post: BlogPost; onClick: () => void }) {
   return (
     <div onClick={onClick} className="cursor-pointer group">
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1 h-full flex flex-col">
+      <div className="bg-white dark:bg-black rounded-lg dark:border-gray-700 border-[0.2px] overflow-hidden shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1 h-full flex flex-col">
         <div className="relative w-full pt-[50%] overflow-hidden">
           <Image
             src={post.image}
@@ -157,11 +158,11 @@ function BlogPost({ post, onClick }: { post: BlogPost; onClick: () => void }) {
         </div>
         <div className="p-4 flex-grow flex flex-col justify-between">
           <div>
-            <p className="text-emerald-600 text-xs font-semibold mb-1">{post.date}</p>
-            <h2 className="text-base font-bold mb-2 text-gray-800 group-hover:text-emerald-600 transition-colors duration-300">{post.title}</h2>
-            <p className="text-gray-600 text-xs mb-3">{post.description}</p>
+            <p className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold mb-1">{post.date}</p>
+            <h2 className="text-base font-bold mb-2 text-gray-800 dark:text-gray-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300">{post.title}</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-xs mb-3">{post.description}</p>
           </div>
-          <div className="flex items-center text-emerald-600 text-sm font-semibold group-hover:text-emerald-700 transition-colors duration-300">
+          <div className="flex items-center text-emerald-600 dark:text-emerald-400 text-sm font-semibold group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300">
             Read More <ArrowRight className="ml-1 w-3 h-3" />
           </div>
         </div>
@@ -197,10 +198,10 @@ function BlogDialog({ post, onClose }: { post: BlogPost; onClose: () => void }) 
         }
       `}</style>
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50"
         onClick={handleOverlayClick}
       >
-        <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto hide-scrollbar">
+        <div className="bg-white dark:bg-black rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto hide-scrollbar">
           <div className="relative w-full pt-[40%]">
             <Image
               src={post.image}
@@ -216,14 +217,14 @@ function BlogDialog({ post, onClose }: { post: BlogPost; onClose: () => void }) 
             </button>
           </div>
           <div className="p-6 md:p-8">
-            <p className="text-emerald-600 text-sm font-semibold mb-2">{post.date}</p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">{post.title}</h2>
+            <p className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold mb-2">{post.date}</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800 dark:text-gray-200">{post.title}</h2>
             <div className="bg-emerald-500 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-4">
               {post.category}
             </div>
-            <p className="text-gray-600 text-base mb-6">{post.description}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-base mb-6">{post.description}</p>
             <div 
-              className="prose prose-sm md:prose-base max-w-none text-gray-700 [&>p]:mb-4"
+              className="prose prose-sm md:prose-base max-w-none text-gray-700 dark:text-gray-300 [&>p]:mb-4 dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: processedContent }}
             ></div>
           </div>
@@ -235,12 +236,22 @@ function BlogDialog({ post, onClose }: { post: BlogPost; onClose: () => void }) 
 
 export default function BlogPage() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null)
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 pt-16 pb-12 px-4 sm:px-6 md:px-8 lg:px-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-800 dark:text-gray-200 pt-16 pb-12 px-4 sm:px-6 md:px-8 lg:px-12">
       <div className="container mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 mt-10 ">Blog</h1>
-        <p className="text-lg text-gray-600 text-center mb-8">Stay updated with the latest in AI-powered research assistance</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 mt-10">Blog</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 text-center mb-8">Stay updated with the latest in AI-powered research assistance</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogPosts.map((post) => (
             <BlogPost key={post.id} post={post} onClick={() => setSelectedPost(post)} />

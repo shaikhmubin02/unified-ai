@@ -1,8 +1,13 @@
+'use client';
+
 import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export default function Changelog() {
+    const { theme } = useTheme()
+
     return (
-        <div className="bg-white text-black min-h-screen">
+        <div className={`${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'} min-h-screen`}>
             <div className="h-16"></div> {/* This creates white space at the top */}
             <section className="py-12 mx-4 sm:mx-6 md:mx-8 lg:mx-16 pt-24">
                 <div className="container mx-auto px-3">
@@ -17,8 +22,8 @@ export default function Changelog() {
                                 </div>
                                 <p className="text-gray-400 text-xs">30 August 2024</p>
                             </div>
-                            <div className="w-full md:w-3/4 border-l-0 md:border-l border-gray-800 pl-0 md:pl-6 pb-6 relative">
-                                <div className="hidden md:block absolute top-0 left-0 w-2 h-2 -ml-1 rounded-full bg-gray-800"></div>
+                            <div className={`w-full md:w-3/4 border-l-0 md:border-l ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} pl-0 md:pl-6 pb-6 relative`}>
+                                <div className={`hidden md:block absolute top-0 left-0 w-2 h-2 -ml-1 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
                                 <div className="flex flex-col md:flex-row">
                                     <div className="flex-grow">
                                         <h3 className="text-xl font-bold mb-3 flex items-center">
@@ -51,8 +56,8 @@ export default function Changelog() {
                                 </div>
                                 <p className="text-gray-400 text-xs">19 August 2024</p>
                             </div>
-                            <div className="w-full md:w-3/4 border-l-0 md:border-l border-gray-800 pl-0 md:pl-6 relative">
-                                <div className="hidden md:block absolute top-0 left-0 w-2 h-2 -ml-1 rounded-full bg-gray-800"></div>
+                            <div className={`w-full md:w-3/4 border-l-0 md:border-l ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} pl-0 md:pl-6 relative`}>
+                                <div className={`hidden md:block absolute top-0 left-0 w-2 h-2 -ml-1 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
                                 <div className="flex flex-col md:flex-row">
                                     <div className="flex-grow">
                                         <h3 className="text-xl font-bold mb-3 flex items-center">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -27,6 +27,9 @@ import { useRouter } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Feedback } from './Feedback'
+import { ModeToggle } from './Modetoggle'
+import { FileUploader } from './FileUploader'
+import { KeyboardEvent } from 'react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -70,10 +73,17 @@ export default function Neuronpage() {
   const [shareableLink, setShareableLink] = useState('')
   const { toast } = useToast()
   const router = useRouter()
-  const [selectedModel, setSelectedModel] = useState("llama3-8b-8192")
+  const [selectedModel, setSelectedModel] = useState("llama-3.2-90b-text-preview")
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [visionQuery, setVisionQuery] = useState('')
+  const [visionResponse, setVisionResponse] = useState<string | null>(null)
+  const [isVisionLoading, setIsVisionLoading] = useState(false)
+  const [visionMessages, setVisionMessages] = useState<Array<{ role: 'user' | 'assistant', content: string | { type: string, text?: string, image_url?: { url: string } }[] }>>([])
+  const [activeTab, setActiveTab] = useState("focus")
 
   useEffect(() => {
     if (isLoaded) {
@@ -461,6 +471,62 @@ export default function Neuronpage() {
     }
   };
 
+  const handleImageUpload = useCallback((file: File) => {
+    setSelectedImage(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+      // Add the image to the visionMessages
+      setVisionMessages(prev => [...prev, {
+        role: 'user',
+        content: [
+          {
+            type: 'image_url',
+            image_url: { url: reader.result as string }
+          }
+        ]
+      }])
+    }
+    reader.readAsDataURL(file)
+  }, [])
+
+  const handleVisionSearch = async () => {
+    if (!visionQuery) return
+
+    setIsVisionLoading(true)
+    try {
+      const newMessage = {
+        role: 'user' as const,
+        content: visionQuery
+      }
+      setVisionMessages(prev => [...prev, newMessage])
+
+      const response = await axios.post('/api/vision', {
+        messages: [...visionMessages, newMessage]
+      })
+
+      setVisionMessages(prev => [...prev, {
+        role: 'assistant' as const,
+        content: response.data.content
+      }])
+      setVisionQuery('')
+    } catch (error) {
+      console.error('Error processing vision request:', error)
+      setVisionMessages(prev => [...prev, {
+        role: 'assistant' as const,
+        content: 'An error occurred while processing your request.'
+      }])
+    } finally {
+      setIsVisionLoading(false)
+    }
+  }
+
+  const handleVisionKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isVisionLoading) {
+      handleVisionSearch()
+    }
+  }
+
   // Reset shareable link when dialog closes
   useEffect(() => {
     if (!isShareDialogOpen) {
@@ -666,6 +732,14 @@ export default function Neuronpage() {
         {/* Bottom section */}
         <div className="mt-auto flex flex-col items-center space-y-4">
           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* <ModeToggle /> */}
+              </TooltipTrigger>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
+                <p>Theme</p>
+              </TooltipContent> 
+            </Tooltip>
             {/* New Navigation Menu Dropdown */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -928,9 +1002,10 @@ export default function Neuronpage() {
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-2 pb-16">
           <div className="max-w-4xl mx-auto h-full flex flex-col">
-            <Tabs defaultValue="focus" className="flex-1 flex flex-col">
+            <Tabs defaultValue="focus" className="flex-1 flex flex-col" onValueChange={(value) => setActiveTab(value)}>
               <TabsList className="mb-2 justify-start">
                 <TabsTrigger value="focus" className="px-4 py-1">Focus</TabsTrigger>
+                <TabsTrigger value="vision" className="px-4 py-1">Vision</TabsTrigger>
                 <TabsTrigger value="copilot" className="px-4 py-1">Copilot</TabsTrigger>
               </TabsList>
               <TabsContent value="focus" className="flex-1 overflow-hidden">
@@ -1010,8 +1085,9 @@ export default function Neuronpage() {
                                           </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama</SelectItem>
+                                          <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama </SelectItem>
                                           <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
+                                          <SelectItem className="text-muted-foreground" value="llama-3.2-90b-text-preview">Meta Llama 3.2</SelectItem>
                                         </SelectContent>
                                       </Select>
 
@@ -1186,6 +1262,70 @@ export default function Neuronpage() {
                   </CardContent>
                 </Card>
               </TabsContent>
+              
+              <TabsContent value="vision" className="flex-1 overflow-hidden">
+                <Card className="h-full flex flex-col mb-6">
+                  <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
+                    <ScrollArea className="flex-1" ref={scrollAreaRef}>
+                      <div className="pt-4 pb-16">
+                        {visionMessages.length > 0 ? (
+                          visionMessages.map((message, index) => (
+                            <div 
+                              key={index} 
+                              className={`mb-4 ${
+                                message.role === 'user' ? 'flex justify-end' : 'flex justify-start'
+                              }`}
+                            >
+                              {message.role === 'assistant' ? (
+                                <div className="flex items-start space-x-2 relative">
+                                  <div className="flex-shrink-0 w-5 h-5 mt-1">
+                                    <Sparkles className="h-4 w-4 text-green-500" />
+                                  </div>
+                                  <div className="relative w-full">
+                                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
+                                      {Array.isArray(message.content) 
+                                        ? message.content.map((content, i) => 
+                                            content.type === 'image_url' 
+                                              ? <img key={i} src={content.image_url?.url} alt="Uploaded" className="max-w-full h-auto max-h-64 rounded-lg mb-2" />
+                                              : <p key={i}>{content.text}</p>
+                                          )
+                                        : message.content
+                                      }
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-start space-x-2">
+                                  <div className="inline-block relative group">
+                                    {Array.isArray(message.content) 
+                                      ? message.content.map((content, i) => 
+                                        content.type === 'image_url' 
+                                          ? <img key={i} src={content.image_url?.url} alt="Uploaded" className="max-w-full h-auto max-h-64 rounded-lg mb-2" />
+                                            : <div key={i} className="p-2 rounded-lg bg-green-100 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{content.text}</div>
+                                        )
+                                      : <div className="p-2 rounded-lg bg-green-100 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                                    }
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
+                            <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
+                            <p className="text-sm md:text-base font-medium">Upload an image and ask questions about it!</p>
+                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Our AI will analyze the image and provide insights</p>
+                            <div className="w-64 h-32 mb-4">
+                              <FileUploader onFileSelect={handleImageUpload} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
               <TabsContent value="copilot" className="flex-1 overflow-hidden">
                 <Card className="h-full">
                   <CardContent className="p-3 h-full flex items-center justify-center">
@@ -1197,37 +1337,72 @@ export default function Neuronpage() {
           </div>
         </main>
 
-        {/* Bottom Search Bar */}
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
-          <div className="max-w-4xl mx-auto w-full flex justify-center">
-            <div className="relative w-full max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                type="text"
-                placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isSearchDisabled}
-              />
-              <Button 
-                size="sm" 
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
-                onClick={() => handleSearch()}
-                disabled={isLoading || isSearchDisabled}
-              >
-                {isLoading ? (
-                  'Searching...'
-                ) : (
-                  <div className="flex items-center">
-                    Ask <ChevronRight className="h-3 w-3 ml-1" />
-                  </div>
-                )}
-              </Button>
+        {/* Bottom Search Bar - Only show for Focus and Copilot tabs */}
+        {activeTab !== "vision" && (
+          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
+            <div className="max-w-4xl mx-auto w-full flex justify-center">
+              <div className="relative w-full max-w-2xl">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="text"
+                  placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
+                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={isSearchDisabled}
+                />
+                <Button 
+                  size="sm" 
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
+                  onClick={() => handleSearch()}
+                  disabled={isLoading || isSearchDisabled}
+                >
+                  {isLoading ? (
+                    'Searching...'
+                  ) : (
+                    <div className="flex items-center">
+                      Ask <ChevronRight className="h-3 w-3 ml-1" />
+                    </div>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Bottom Search Bar for Vision tab */}
+        {activeTab === "vision" && (
+          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
+            <div className="max-w-4xl mx-auto w-full flex justify-center">
+              <div className="relative w-full max-w-2xl">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="text"
+                  placeholder="Ask about the image..."
+                  value={visionQuery}
+                  onChange={(e) => setVisionQuery(e.target.value)}
+                  onKeyDown={handleVisionKeyDown}
+                  className="pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full"
+                />
+                <Button 
+                  size="sm" 
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
+                  onClick={handleVisionSearch}
+                  disabled={isVisionLoading}
+                >
+                  {isVisionLoading ? (
+                    'Analyzing...'
+                  ) : (
+                    <div className="flex items-center">
+                      Ask <ChevronRight className="h-3 w-3 ml-1" />
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Feedback Component */}

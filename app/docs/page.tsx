@@ -1,16 +1,27 @@
 'use client'
 
-import { useState } from 'react';
-import { Search, Settings, Zap, PlayCircle, Keyboard, CheckSquare, Database, FileText, GitBranch, Sun, ChevronRight, ExternalLink, Sparkles, StepBack, ChevronLeft, Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { Search, Settings, Zap, PlayCircle, Keyboard, CheckSquare, Database, FileText, GitBranch, ChevronRight, ExternalLink, Sparkles, ChevronLeft, Menu, Sun } from 'lucide-react';
 import Footer from '../landing/components/Footer';
 
 export default function DocumentationSection() {
   const [activeSection, setActiveSection] = useState('core-features');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // or a loading spinner
+  }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <header className="border-b border-gray-200 py-4 px-6 flex items-center justify-between bg-white shadow-sm">
+    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-100">
+      <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-black py-4 px-6 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-4">
           <Sparkles className="h-6 w-6 text-emerald-500" />
           <span className="font-bold text-xl hidden sm:inline">Neuron AI</span>
@@ -42,7 +53,7 @@ export default function DocumentationSection() {
         </div>
       </header>
       <div className="flex flex-col sm:flex-row">
-        <nav className={`w-full sm:w-64 p-6 border-r border-gray-200 h-auto sm:h-[calc(100vh-4rem)] overflow-y-auto ${isMobileMenuOpen ? 'block' : 'hidden'} sm:block`}>
+        <nav className={`w-full sm:w-64 p-6 border-r border-gray-200 dark:border-gray-700 h-auto sm:h-[calc(100vh-4rem)] overflow-y-auto ${isMobileMenuOpen ? 'block' : 'hidden'} sm:block`}>
           <div className="space-y-4">
             <a 
               href="#" 
@@ -111,7 +122,7 @@ export default function DocumentationSection() {
             </a>
           </div>
         </nav>
-        <main className="flex-1 p-4 sm:p-8 overflow-y-auto h-[calc(100vh-4rem)]">
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto h-[calc(100vh-4rem)] bg-white dark:bg-black">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center text-sm text-gray-500 mb-4">
               <a href="#" className="hover:text-emerald-500 transition-colors">Home</a>
@@ -122,7 +133,7 @@ export default function DocumentationSection() {
               <Settings className="h-10 w-10 mr-4 text-emerald-500" />
               {activeSection.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
-            <div className="prose prose-emerald max-w-none">
+            <div className="prose prose-emerald dark:prose-invert max-w-none">
               <p>Welcome to the Neuron AI documentation. Here you&apos;ll find comprehensive guides and documentation to help you start working with Neuron AI as quickly as possible, as well as support if you get stuck. Let&apos;s jump right in!</p>
               <h2>Getting Started</h2>
               <p>To get started with Neuron AI, you&apos;ll need to...</p>
@@ -131,7 +142,7 @@ export default function DocumentationSection() {
           </div>
         </main>
       </div>
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
       <Footer />
     </div>
   );

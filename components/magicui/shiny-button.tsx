@@ -40,7 +40,7 @@ const ShinyButton = ({ children, className, ...props }: ShinyButtonProps) => {
       )}
     >
       <span
-        className="relative block size-full font-semibold text-sm tracking-wide text-emerald-400 dark:font-light dark:text-[rgb(255,255,255,90%)]"
+        className="relative block size-full font-semibold text-sm tracking-wide text-emerald-400 dark:font-light dark:text-emerald-400 "
         style={{
           maskImage:
             "linear-gradient(-75deg,hsl(var(--primary)) calc(var(--x) + 20%),transparent calc(var(--x) + 30%),hsl(var(--primary)) calc(var(--x) + 100%))",
