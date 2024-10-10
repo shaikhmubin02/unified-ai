@@ -73,7 +73,7 @@ export default function Neuronpage() {
   const [shareableLink, setShareableLink] = useState('')
   const { toast } = useToast()
   const router = useRouter()
-  const [selectedModel, setSelectedModel] = useState("llama-3.2-90b-text-preview")
+  const [selectedModel, setSelectedModel] = useState("llama3-8b-8192")
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
