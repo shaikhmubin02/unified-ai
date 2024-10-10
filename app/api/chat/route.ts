@@ -27,12 +27,35 @@ export async function POST(req: NextRequest) {
     const chatCompletion = await groq.chat.completions.create({
       messages: auth.userId ? [{ role: 'system', content: memory }, ...messages] : messages,
       model: model, // Use the selected model
+      stream: true, // Enable streaming
     })
 
-    const content = chatCompletion.choices[0]?.message?.content || ""
-    return NextResponse.json({ content })
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of chatCompletion) {
+            const content = chunk.choices[0]?.delta?.content || ''
+            controller.enqueue(encoder.encode(content))
+          }
+          controller.close()
+        } catch (error) {
+          console.error('Error streaming Groq API:', error)
+          controller.error('An error occurred during chat completion')
+        }
+      }
+    })
+
+    return new NextResponse(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        // Optionally, you can add CORS headers if needed
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
+      },
+    })
   } catch (error) {
-    console.error('Error calling Groq API:', error)
+    console.error('Error setting up stream:', error)
     return NextResponse.json({ error: 'An error occurred during chat completion' }, { status: 500 })
   }
 }

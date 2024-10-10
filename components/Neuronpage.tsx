@@ -181,7 +181,7 @@ export default function Neuronpage() {
     setIsBookmarkSidebarOpen(false) // Close bookmark sidebar if open
   }
 
-  const handleSearch = async (searchQuery?: string, editedMessageIndex?: number) => {
+  const handleSearch = useCallback(async (searchQuery?: string, editedMessageIndex?: number) => {
     const queryToSearch = searchQuery || query
     if (!queryToSearch.trim()) return
 
@@ -216,32 +216,62 @@ export default function Neuronpage() {
     setEditingMessageId(null) // Reset editing state
 
     try {
-      const response = await axios.post('/api/chat', {
-        messages: isSignedIn 
-          ? [
-              { role: 'system', content: "You are an AI assistant. Avoid sharing personal opinions or identifiers." }, 
-              ...updatedMessages
-            ] 
-          : updatedMessages,
-        userId: isSignedIn ? user.id : 'anonymous',
-        model: selectedModel
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: isSignedIn 
+            ? [
+                { role: 'system', content: "You are an AI assistant. Avoid sharing personal opinions or identifiers." }, 
+                ...updatedMessages
+              ] 
+            : updatedMessages,
+          userId: isSignedIn ? user.id : 'anonymous',
+          model: selectedModel
+        }),
       })
+
+      if (!response.body) {
+        throw new Error('No response body')
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let done = false
+      let assistantMessageIndex = updatedMessages.length
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read()
+        done = doneReading
+        if (value) {
+          const chunk = decoder.decode(value)
+          setMessages(prevMessages => {
+            const newMessages = [...prevMessages]
+            if (newMessages[assistantMessageIndex] && newMessages[assistantMessageIndex].role === 'assistant') {
+              newMessages[assistantMessageIndex].content += chunk
+            } else {
+              newMessages.push({ role: 'assistant', content: chunk })
+            }
+            return newMessages
+          })
+        }
+      }
+
       const endTime = Date.now()
       const totalTime = endTime - startTime
       setResponseTime(totalTime)
-      const assistantMessage: Message = { role: 'assistant', content: response.data.content }
-      const finalMessages = [...updatedMessages, assistantMessage]
-      setMessages(finalMessages)
-      
+
       // Update chat history only if user is signed in
       if (isSignedIn && currentChatId) {
         const currentChat = chatHistories.find(chat => chat._id === currentChatId)
-        if (currentChat && !currentChat.isTitleEdited && currentChat.messages.length === 0) {
+        if (currentChat && !currentChat.isTitleEdited && currentChat.messages.length === 1) {
           // If it's a new chat and the title hasn't been edited, update the title
           const newTitle = queryToSearch.slice(0, 30) + (queryToSearch.length > 30 ? '...' : '')
           const updateResponse = await axios.put(`/api/chats/${currentChatId}`, {
             title: newTitle,
-            messages: finalMessages
+            messages: [...updatedMessages, { role: 'assistant', content: assistantMessageIndex >= 0 ? "" : "" }]
           })
           setChatHistories(prev => prev.map(chat => 
             chat._id === currentChatId ? { ...updateResponse.data, isTitleEdited: false } : chat
@@ -249,7 +279,7 @@ export default function Neuronpage() {
         } else {
           // For existing chats or if the title has been edited, just update the messages
           const updateResponse = await axios.put(`/api/chats/${currentChatId}`, {
-            messages: finalMessages
+            messages: [...updatedMessages, { role: 'assistant', content: "" }]
           })
           setChatHistories(prev => prev.map(chat => 
             chat._id === currentChatId ? { ...chat, messages: updateResponse.data.messages } : chat
@@ -263,7 +293,16 @@ export default function Neuronpage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [
+    query,
+    isSignedIn,
+    anonymousQueriesCount,
+    createNewChat,
+    currentChatId,
+    chatHistories,
+    selectedModel,
+    messages,
+  ])
 
   // Add useEffect to handle scrolling when messages change
   useEffect(() => {
@@ -1032,6 +1071,10 @@ export default function Neuronpage() {
                                     <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
                                       {message.content}
                                     </div>
+                                    {/* Optional: Add a loader or typing indicator */}
+                                    {isLoading && index === messages.length - 1 && (
+                                      <div className="loader">...</div>
+                                    )}
                                     {/* Buttons container */}
                                     <div className="absolute bottom-0 left-0 flex space-x-2">
                                       {/* Copy Button */}
