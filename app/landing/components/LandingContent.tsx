@@ -231,13 +231,13 @@ export default function LandingContent() {
                 variants={itemVariants}
                 className="text-xl text-zinc-300"
               >
-                Access ChatGPT, Claude, Google's Gemini, and more - all in one place 🚀
+                Access ChatGPT, Claude, Google&apos;s Gemini, and more - all in one place 🚀
               </motion.p>
               <motion.p 
                 variants={itemVariants}
                 className="text-lg text-zinc-400"
               >
-                It's like a party where all the cool AIs hang out, and you're invited! 🎉
+                It&apos;s like a party where all the cool AIs hang out, and you&apos;re invited! 🎉
               </motion.p>
               <motion.div variants={itemVariants}>
                 <RainbowButton>
@@ -430,10 +430,10 @@ export default function LandingContent() {
                     Advanced AI, Simplified Access
                   </h2>
                   <p className="text-lg text-gray-300">
-                    Experience ChatGPT, Claude, Google's Gemini, and other top-tier LLMs through a single platform. It's like having a Swiss Army knife, but for AI!
+                    Experience ChatGPT, Claude, Google&apos;s Gemini, and other top-tier LLMs through a single platform. It&apos;s like having a Swiss Army knife, but for AI!
                   </p>
                   <p className="text-lg text-gray-300">
-                    Why settle for one AI when you can have them all? It's not greed, it's efficiency! 😉
+                    Why settle for one AI when you can have them all? It&apos;s not greed, it&apos;s efficiency! 😉
                   </p>
                 </div>
                 <div className="w-full md:w-1/2">
@@ -459,7 +459,7 @@ export default function LandingContent() {
                     Say goodbye to multiple subscriptions. Our platform is like an all-you-can-eat buffet, but for AI models!
                   </p>
                   <p className="text-lg text-gray-300">
-                    Leverage the strengths of each AI model. It's like having a team of super-smart interns, minus the coffee runs! ☕️
+                    Leverage the strengths of each AI model. It&apos;s like having a team of super-smart interns, minus the coffee runs! ☕️
                   </p>
                 </div>
                 <div className="w-full md:w-1/2">
@@ -505,7 +505,7 @@ export default function LandingContent() {
                 One Platform, Multiple AI Powerhouses
               </h2>
               <p className="text-xl text-gray-300 max-w-2xl">
-                Unified AI brings together ChatGPT, Claude, Google's Gemini, and more in a single, intuitive interface. Experience the synergy of leading language models working in harmony.
+                Unified AI brings together ChatGPT, Claude, Google&apos;s Gemini, and more in a single, intuitive interface. Experience the synergy of leading language models working in harmony.
               </p>
             </div>
             <Card className="relative w-full max-w-4xl mx-auto aspect-video mb-12 border-none bg-transparent ">
@@ -549,7 +549,7 @@ export default function LandingContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
                   <h3 className="text-xl font-semibold mb-3 text-white">Smart Model Switching</h3>
-                  <p className="text-gray-300">Seamlessly switch between AI models mid-conversation to leverage each model's unique strengths.</p>
+                  <p className="text-gray-300">Seamlessly switch between AI models mid-conversation to leverage each model&apos;s unique strengths.</p>
                 </div>
 
                 <div className="bg-gray-900/50 backdrop-blur-sm p-8 rounded-lg shadow-md border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300">
@@ -826,7 +826,7 @@ export default function LandingContent() {
                 Loved by AI Enthusiasts
               </h2>
               <p className="text-xl text-gray-400">
-                Join thousands of satisfied users who've transformed their AI workflow
+                Join thousands of satisfied users who&apos;ve transformed their AI workflow
               </p>
             </div>
 
@@ -1005,7 +1005,7 @@ export default function LandingContent() {
                 Ready to Transform Your AI Workflow?
               </h2>
               <p className="text-xl text-gray-300 mb-8">
-                Join thousands of users who've already simplified their AI interactions with Unified AI.
+                Join thousands of users who&apos;ve already simplified their AI interactions with Unified AI.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <ShinyButton>Get Started Free</ShinyButton>
