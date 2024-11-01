@@ -1215,7 +1215,7 @@ export default function Neuronpage() {
                                     </Marquee>
                                   </div>
                                   <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
                                       {scienceQuestions.map((item, index) => (
                                         <div
                                           key={index}
@@ -1228,7 +1228,7 @@ export default function Neuronpage() {
                                     </Marquee>
                                   </div>
                                   <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
+                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={100}>
                                       {technologyQuestions.map((item, index) => (
                                         <div
                                           key={index}
@@ -1392,7 +1392,7 @@ export default function Neuronpage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200  text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={isSearchDisabled}
                 />
                 <Button 

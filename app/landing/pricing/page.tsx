@@ -11,7 +11,7 @@ const Pricing = () => {
   };
 
   return (
-    <section className="bg-white dark:bg-black text-black dark:text-white py-16 mx-8 sm:mx-12 md:mx-16 lg:mx-24 min-h-screen pt-28">
+    <section className="bg-[#0e1011] text-white py-16 mx-8 sm:mx-12 md:mx-16 lg:mx-24 min-h-screen pt-28">
       <div className="container mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-center mb-8">
           Supercharge your AI-powered<br />research today.
