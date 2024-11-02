@@ -5,9 +5,11 @@ import { ChevronDown, Video, Github, Linkedin, Twitter, MessageCircle, Sparkle, 
 import Image from 'next/image'
 import ShinyButton from '@/components/magicui/shiny-button'
 import { useState } from 'react' // Updated import
+import { useAuth } from '@clerk/nextjs' // Add this import
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isSignedIn } = useAuth() // Add this line
 
   return (
     <header className="fixed top-0 left-0 right-0 mx-4 sm:mx-8 md:mx-12 lg:mx-24 xl:mx-32 my-3 bg-[#0e1011] bg-opacity-90 border-[0.2px] border-gray-700 rounded-full shadow-lg z-50 border-t-1 border-emerald-400">
@@ -20,7 +22,7 @@ export default function Header() {
         </Link>
         
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden md:flex items-center space-x-9">
           <Link 
             href="/landing/pricing" 
             className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
@@ -47,8 +49,10 @@ export default function Header() {
           </Link>
         </div>
 
-        <Link className="hidden md:block" href="/">
-          <ShinyButton>Dashboard</ShinyButton>
+        <Link className="hidden md:block" href={isSignedIn ? "/" : "/sign-up"}>
+          <ShinyButton>
+            {isSignedIn ? "Dashboard" : "Get Started"}
+          </ShinyButton>
         </Link>
 
         {/* Mobile Menu Button */}
@@ -68,7 +72,9 @@ export default function Header() {
             <Link href="/docs" className="text-gray-200 hover:text-emerald-400">Documentation</Link>
             <Link href="/landing/changelog" className="text-gray-200 hover:text-emerald-400">Changelog</Link>
             <Link href="/landing/blog" className="text-gray-200 hover:text-emerald-400">Blog</Link>
-            <Link href="/" className="text-emerald-400 font-semibold">Dashboard</Link>
+            <Link href={isSignedIn ? "/" : "/sign-up"} className="text-emerald-400 font-semibold">
+              {isSignedIn ? "Dashboard" : "Get Started"}
+            </Link>
           </nav>
         </div>
       )}

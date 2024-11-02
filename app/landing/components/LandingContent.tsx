@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { AnimatedBeamDemo } from "./AnimatedBeamDemo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DotPattern from "@/components/ui/dot-pattern";
-import { useState } from "react";
 import { Meteors } from "@/components/ui/meteors";
 import Marquee from "@/components/ui/marquee";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -15,6 +14,17 @@ import AnimatedShinyText from "@/components/ui/animated-shiny-text";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import ShinyButton from "@/components/magicui/shiny-button";
 import { Button } from "@/components/ui/button";
+import { Canvas, useFrame } from "@react-three/fiber"
+import { Points, PointMaterial } from "@react-three/drei"
+import * as random from "maath/random/dist/maath-random.esm"
+import { Suspense, useRef, useState } from "react"
+import * as THREE from 'three'
+
+// Add metadata export if needed
+export const metadata = {
+  title: "Unified AI: Leading LLMs in One Unified Platform",
+  description: "Access ChatGPT, Claude, Google's Gemini, and more - all in one place"
+}
 
 export default function LandingContent() {
 
@@ -158,9 +168,45 @@ export default function LandingContent() {
     }
   };
 
+  function Stars(props: any) {
+    const ref = useRef<THREE.Points>(null)
+    const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }))
+  
+    useFrame((state, delta) => {
+      if (ref.current) {
+        ref.current.rotation.x -= delta / 50
+        ref.current.rotation.y -= delta / 75
+      }
+    })
+  
     return (
-      <>
+      <group rotation={[0, 0, Math.PI / 4]}>
+        <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+          <PointMaterial
+            transparent
+            color="#ffffff"
+            size={0.002}
+            sizeAttenuation={true}
+            depthWrite={false}
+          />
+        </Points>
+      </group>
+    )
+  }
+
+    return (
+      <div className="relative">
         <main className="pt-36 pb-20 text-center min-h-[88vh] flex items-center relative overflow-hidden bg-[#0e1011]">
+          <div className="absolute inset-0 z-0">
+            <Canvas 
+              camera={{ position: [0, 0, 1] }}
+              style={{ background: '#0e1011' }}
+            >
+              <Suspense fallback={null}>
+                <Stars />
+              </Suspense>
+            </Canvas>
+          </div>
           <div className="absolute inset-0 overflow-hidden">
             <Meteors 
               number={8} 
@@ -1015,7 +1061,7 @@ export default function LandingContent() {
           </div>
         </section>
 
-      </>
+      </div>
     )
   }
 

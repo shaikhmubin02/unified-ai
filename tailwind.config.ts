@@ -67,7 +67,8 @@ const config: Config = {
   			spotlight: 'spotlight 2s ease .75s 1 forwards',
   			'meteor-effect': 'meteor 5s linear infinite',
   			'shiny-text': 'shiny-text 8s infinite',
-  			rainbow: 'rainbow var(--speed, 2s) infinite linear'
+  			rainbow: 'rainbow var(--speed, 2s) infinite linear',
+  			gradient: 'gradient 8s ease infinite',
   		},
   		keyframes: {
   			marquee: {
@@ -124,7 +125,17 @@ const config: Config = {
   				'100%': {
   					'background-position': '200%'
   				}
-  			}
+  			},
+  			gradient: {
+  				'0%, 100%': {
+  					'background-size': '200% 200%',
+  					'background-position': 'left center',
+  				},
+  				'50%': {
+  					'background-size': '200% 200%',
+  					'background-position': 'right center',
+  				},
+  			},
   		}
   	}
   },
