@@ -25,6 +25,25 @@ const Circle = forwardRef<
 
 Circle.displayName = "Circle";
 
+const Square = forwardRef<
+  HTMLDivElement,
+  { className?: string; children?: React.ReactNode }
+>(({ className, children }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "z-10 flex size-12 items-center justify-center rounded-md border-2 bg-white p-1 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+});
+
+Square.displayName = "Square";
+
 export function AnimatedBeamDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const div1Ref = useRef<HTMLDivElement>(null);
@@ -43,35 +62,35 @@ export function AnimatedBeamDemo() {
     >
       <div className="flex size-full flex-col max-w-lg max-h-[200px] items-stretch justify-between gap-10">
         <div className="flex flex-row items-center justify-between">
-          <Circle ref={div1Ref}>
-            <Icons.openai />
-          </Circle>
+          <Square ref={div1Ref}>
+            <Image src="/openai.png" alt='openai' width={70} height={70} className="object-contain"/>
+          </Square>
           {/* New Circle on the upper side */}
           {/* <Circle ref={div8Ref}>
             <Image src="/geminil.png" alt='nextjs' width={90} height={90}/>
           </Circle>  */}
-          <Circle ref={div5Ref}>
-            <Icons.googleDocs />
-          </Circle>
+          <Square ref={div5Ref}>
+            <Image src="/metaai.avif" alt='metaai' width={90} height={90}/>
+          </Square>
         </div>
         <div className="flex flex-row items-center justify-between">
-          <Circle ref={div2Ref}>
-            <Image src="/geminil.png" alt='nextjs' width={90} height={90}/>
-          </Circle>
+          <Square ref={div2Ref}>
+            <Image src="/anthropic.png" alt='anthropic' width={150} height={150} className="object-contain"/>
+          </Square>
           <Circle ref={div4Ref} className="size-16">
-            <Icons.openai />
+            <Image src="/logo.png" alt='logo' width={110} height={110}/>
           </Circle>
-          <Circle ref={div6Ref}>
-            <Icons.zapier />
-          </Circle>
+          <Square ref={div6Ref}>
+            <Image src="/mixtralai.png" alt='mixtralai' width={110} height={110}/>
+          </Square>
         </div>
         <div className="flex flex-row items-center justify-between">
-          <Circle ref={div3Ref}>
-            <Image src="/anthropic.png" alt='anthropic' width={110} height={110}/>
-          </Circle>
-          <Circle ref={div7Ref}>
-            <Icons.messenger />
-          </Circle>
+          <Square ref={div3Ref}>
+            <Image src="/gemini.png" alt='gemini' width={60} height={60} className="object-contain mb-1"/>
+          </Square>
+          <Square ref={div7Ref}>
+            <Image src="/deepseekai.png" alt='deepseekai' width={170} height={170} className="object-contain"/>
+          </Square>
         </div>
       </div>
 
@@ -155,8 +174,8 @@ const Icons = {
   ),
   openai: () => (
     <svg
-      width="100"
-      height="100"
+      width="50"
+      height="50"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
     >
