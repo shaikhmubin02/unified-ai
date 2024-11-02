@@ -22,8 +22,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Neuron AI",
-  description: "Get answers at lightning speed.",
+  title: "Unified AI",
+  description: "Access ChatGPT, Claude, Google's Gemini, and more - all in one place",
 };
 
 export default function RootLayout({

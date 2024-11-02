@@ -14,8 +14,8 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         <div className="flex flex-col md:flex-row justify-between">
           <div className="mb-12 md:mb-0">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="bg-white text-black p-1 rounded-lg">
-                <Image src="/anthropic.png" alt="Unified AI" width={24} height={24} />
+              <div className="bg-none text-black p-1 rounded-lg -ml-1">
+                <Image src="/logo.png" alt="Unified AI" width={34} height={34} className='animate-logo-spin origin-center' />
               </div>
               <span className="text-xl font-semibold">Unified AI</span>
             </div>

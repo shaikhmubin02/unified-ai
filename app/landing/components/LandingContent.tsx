@@ -19,6 +19,7 @@ import { Points, PointMaterial } from "@react-three/drei"
 import * as random from "maath/random/dist/maath-random.esm"
 import { Suspense, useRef, useState } from "react"
 import * as THREE from 'three'
+import Image from 'next/image'
 
 // Add metadata export if needed
 export const metadata = {
@@ -266,12 +267,19 @@ export default function LandingContent() {
 
               <motion.h1 
                 variants={itemVariants}
-                className="text-5xl font-bold leading-tight text-white"
+                className="text-4xl font-bold leading-tight text-white"
               >
-                <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent font-bold">
-                  Unified AI
+                <span className="inline-flex flex-wrap items-center justify-center gap-1 w-full">
+                  <Image 
+                    src="/logo.png" 
+                    alt="Unified AI" 
+                    width={38} 
+                    height={38}
+                  />
+                  <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent font-bold">Unified AI</span>
+                  <span>: Leading LLMs in</span>
+                  <span className="w-full text-center">One Unified Platform</span>
                 </span>
-                : Leading LLMs in One Unified Platform
               </motion.h1>
               <motion.p 
                 variants={itemVariants}

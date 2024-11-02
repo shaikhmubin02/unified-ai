@@ -69,6 +69,7 @@ const config: Config = {
   			'shiny-text': 'shiny-text 8s infinite',
   			rainbow: 'rainbow var(--speed, 2s) infinite linear',
   			gradient: 'gradient 8s ease infinite',
+  			'logo-spin': 'logo-spin 5s ease-in-out infinite',
   		},
   		keyframes: {
   			marquee: {
@@ -135,6 +136,11 @@ const config: Config = {
   					'background-size': '200% 200%',
   					'background-position': 'right center',
   				},
+  			},
+  			'logo-spin': {
+  				'0%': { transform: 'rotate(0deg)' },
+  				'60%': { transform: 'rotate(360deg)' },
+  				'100%': { transform: 'rotate(360deg)' }
   			},
   		}
   	}

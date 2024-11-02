@@ -4,20 +4,26 @@ import Link from 'next/link'
 import { ChevronDown, Video, Github, Linkedin, Twitter, MessageCircle, Sparkle, Sparkles, FileText, BarChart, BookOpen, Newspaper, Menu } from 'lucide-react'
 import Image from 'next/image'
 import ShinyButton from '@/components/magicui/shiny-button'
-import { useState } from 'react' // Updated import
-import { useAuth } from '@clerk/nextjs' // Add this import
+import { useState } from 'react'
+import { useAuth } from '@clerk/nextjs'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { isSignedIn } = useAuth() // Add this line
+  const { isSignedIn } = useAuth()
 
   return (
     <header className="fixed top-0 left-0 right-0 mx-4 sm:mx-8 md:mx-12 lg:mx-24 xl:mx-32 my-3 bg-[#0e1011] bg-opacity-90 border-[0.2px] border-gray-700 rounded-full shadow-lg z-50 border-t-1 border-emerald-400">
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
         <Link href="/landing">
           <div className="flex items-center space-x-2">
-            <Image src="/anthropic.png" alt="Unified AI" width={25} height={25} className='rounded-md'/>
-            <span className="text-md tracking-tight font-semibold text-transparent bg-emerald-500 bg-clip-text">UNIFIED AI</span>
+            <Image 
+              src="/logo.png" 
+              alt="Unified AI" 
+              width={25} 
+              height={25}
+              className="animate-logo-spin origin-center"
+            />
+            <span className="text-md tracking-tight font-semibold text-transparent bg-gray-400 bg-clip-text">UNIFIED AI</span>
           </div>
         </Link>
         
