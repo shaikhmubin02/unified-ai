@@ -36,22 +36,22 @@ export default function Header() {
             Pricing
           </Link>
           <Link 
-            href="/docs" 
+            href="/" 
             className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
           >
-            Docs
-          </Link>
-          <Link 
-            href="/landing/changelog" 
-            className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
-          >
-            Changelog
+            FAQ
           </Link>
           <Link 
             href="/landing/blog" 
             className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
           >
             Blog
+          </Link>
+          <Link 
+            href="/landing/changelog" 
+            className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
+          >
+            Changelog
           </Link>
         </div>
 

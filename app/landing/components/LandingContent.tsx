@@ -285,7 +285,36 @@ export default function LandingContent() {
                 variants={itemVariants}
                 className="text-xl text-zinc-300"
               >
-                Access ChatGPT, Claude, Google&apos;s Gemini, and more - all in one place 🚀
+                <span className="inline-flex items-center gap-2">
+                  Access ChatGPT
+                  <Image 
+                    src='/chatgpt.jpg' 
+                    alt="ChatGPT" 
+                    width={20} 
+                    height={20} 
+                    className="inline-block overflow-hidden rounded-md"
+                  />
+                </span>, {" "}
+                <span className="inline-flex items-center gap-2">
+                  Claude
+                  <Image 
+                    src='/claude.png' 
+                    alt="Claude" 
+                    width={20} 
+                    height={20} 
+                    className="inline-block overflow-hidden rounded-md"
+                  />
+                </span>, {" "}
+                <span className="inline-flex items-center gap-2">
+                  Google&apos;s Gemini
+                  <Image 
+                    src='/gemini-logo.png' 
+                    alt="Gemini" 
+                    width={20} 
+                    height={20} 
+                    className="inline-block overflow-hidden rounded-md"
+                  />
+                </span> and more - all in one place.
               </motion.p>
               <motion.p 
                 variants={itemVariants}
