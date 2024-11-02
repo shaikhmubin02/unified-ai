@@ -24,19 +24,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Prepare system message with memory if user is authenticated
+    const systemMessages = auth.userId && memory ? 
+      [{ role: 'system', content: memory }] : []
+    
     const chatCompletion = await groq.chat.completions.create({
-      messages: auth.userId ? [{ role: 'system', content: memory }, ...messages] : messages,
-      model: model, // Use the selected model
-      stream: true, // Enable streaming
+      messages: [...systemMessages, ...messages],
+      model: model,
+      stream: true,
     })
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
+        let fullResponse = ''
         try {
           for await (const chunk of chatCompletion) {
             const content = chunk.choices[0]?.delta?.content || ''
-            controller.enqueue(encoder.encode(content))
+            if (content) {
+              fullResponse += content
+              controller.enqueue(encoder.encode(content))
+            }
           }
           controller.close()
         } catch (error) {
@@ -49,7 +57,6 @@ export async function POST(req: NextRequest) {
     return new NextResponse(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        // Optionally, you can add CORS headers if needed
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-cache',
       },

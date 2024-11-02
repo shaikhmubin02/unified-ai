@@ -30,6 +30,7 @@ import { Feedback } from './Feedback'
 import { ModeToggle } from './Modetoggle'
 import { FileUploader } from './FileUploader'
 import { KeyboardEvent } from 'react'
+import Image from 'next/image'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -77,13 +78,6 @@ export default function UnifiedMain() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [visionQuery, setVisionQuery] = useState('')
-  const [visionResponse, setVisionResponse] = useState<string | null>(null)
-  const [isVisionLoading, setIsVisionLoading] = useState(false)
-  const [visionMessages, setVisionMessages] = useState<Array<{ role: 'user' | 'assistant', content: string | { type: string, text?: string, image_url?: { url: string } }[] }>>([])
-  const [activeTab, setActiveTab] = useState("focus")
 
   useEffect(() => {
     if (isLoaded) {
@@ -142,7 +136,6 @@ export default function UnifiedMain() {
 
   const createNewChat = async () => {
     if (isSignedIn && user) {
-      // Create a new chat in the database
       try {
         const response = await axios.post('/api/chats', {
           userId: user.id,
@@ -152,12 +145,12 @@ export default function UnifiedMain() {
         setChatHistories(prev => [response.data, ...prev])
         setCurrentChatId(response.data._id)
         setMessages([])
-        setIsHistorySidebarOpen(true) // Open the history sidebar
+        setIsHistorySidebarOpen(true)
       } catch (error) {
         console.error('Error creating new chat:', error)
       }
     } else {
-      // For anonymous users, create a new chat locally
+      // For anonymous users
       const newChatId = Date.now().toString()
       const newChat: ChatHistory = {
         _id: newChatId,
@@ -205,104 +198,100 @@ export default function UnifiedMain() {
     let updatedMessages: Message[]
 
     if (editedMessageIndex !== undefined) {
-      // If editing a message, remove all subsequent messages
       updatedMessages = [...messages.slice(0, editedMessageIndex), newMessage]
     } else {
       updatedMessages = [...messages, newMessage]
     }
 
     setMessages(updatedMessages)
-    setQuery('') // Clear the search bar
-    setEditingMessageId(null) // Reset editing state
+    setQuery('')
+    setEditingMessageId(null)
 
     try {
+      let fullAssistantResponse = ''
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: isSignedIn 
-            ? [
-                { role: 'system', content: "You are an AI assistant. Avoid sharing personal opinions or identifiers." }, 
-                ...updatedMessages
-              ] 
+            ? [{ role: 'system', content: "You are an AI assistant." }, ...updatedMessages]
             : updatedMessages,
           userId: isSignedIn ? user.id : 'anonymous',
           model: selectedModel
         }),
       })
 
-      if (!response.body) {
-        throw new Error('No response body')
-      }
+      if (!response.body) throw new Error('No response body')
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
-      let done = false
-      let assistantMessageIndex = updatedMessages.length
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read()
-        done = doneReading
-        if (value) {
-          const chunk = decoder.decode(value)
-          setMessages(prevMessages => {
-            const newMessages = [...prevMessages]
-            if (newMessages[assistantMessageIndex] && newMessages[assistantMessageIndex].role === 'assistant') {
-              newMessages[assistantMessageIndex].content += chunk
-            } else {
-              newMessages.push({ role: 'assistant', content: chunk })
-            }
-            return newMessages
-          })
-        }
+      // Add the assistant message placeholder immediately
+      const assistantMessage: Message = { role: 'assistant', content: '' }
+      setMessages(prev => [...prev, assistantMessage])
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        
+        const chunk = decoder.decode(value)
+        fullAssistantResponse += chunk
+        
+        setMessages(prevMessages => {
+          const newMessages = [...prevMessages]
+          newMessages[newMessages.length - 1].content = fullAssistantResponse
+          return newMessages
+        })
       }
 
       const endTime = Date.now()
-      const totalTime = endTime - startTime
-      setResponseTime(totalTime)
+      setResponseTime(endTime - startTime)
 
-      // Update chat history only if user is signed in
+      // After streaming is complete, save the final messages to the database
       if (isSignedIn && currentChatId) {
-        const currentChat = chatHistories.find(chat => chat._id === currentChatId)
-        if (currentChat && !currentChat.isTitleEdited && currentChat.messages.length === 1) {
-          // If it's a new chat and the title hasn't been edited, update the title
-          const newTitle = queryToSearch.slice(0, 30) + (queryToSearch.length > 30 ? '...' : '')
-          const updateResponse = await axios.put(`/api/chats/${currentChatId}`, {
-            title: newTitle,
-            messages: [...updatedMessages, { role: 'assistant', content: assistantMessageIndex >= 0 ? "" : "" }]
-          })
+        try {
+          const finalMessages = [...updatedMessages, { role: 'assistant', content: fullAssistantResponse }]
+          
+          // Update chat with messages and title if it's the first message
+          const updateData: any = {
+            messages: finalMessages
+          }
+
+          // If this is the first message, update the title
+          if (messages.length === 0) {
+            // Truncate the question if it's too long (e.g., more than 50 characters)
+            const newTitle = queryToSearch.length > 50 
+              ? queryToSearch.substring(0, 47) + '...'
+              : queryToSearch;
+            updateData.title = newTitle;
+            updateData.isTitleEdited = false; // Mark that this is an auto-generated title
+          }
+
+          await axios.put(`/api/chats/${currentChatId}`, updateData)
+
+          // Fetch the updated chat to ensure sync
+          const updatedChatResponse = await axios.get(`/api/chats/${currentChatId}`)
+          const updatedChat = updatedChatResponse.data
+
           setChatHistories(prev => prev.map(chat => 
-            chat._id === currentChatId ? { ...updateResponse.data, isTitleEdited: false } : chat
+            chat._id === currentChatId ? updatedChat : chat
           ))
-        } else {
-          // For existing chats or if the title has been edited, just update the messages
-          const updateResponse = await axios.put(`/api/chats/${currentChatId}`, {
-            messages: [...updatedMessages, { role: 'assistant', content: "" }]
-          })
-          setChatHistories(prev => prev.map(chat => 
-            chat._id === currentChatId ? { ...chat, messages: updateResponse.data.messages } : chat
-          ))
+          setMessages(updatedChat.messages)
+        } catch (error) {
+          console.error('Error saving chat:', error)
         }
       }
+
     } catch (error) {
       console.error('Error fetching response:', error)
-      const errorMessage: Message = { role: 'assistant', content: 'An error occurred while processing your request.' }
-      setMessages(prevMessages => [...prevMessages, errorMessage])
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { role: 'assistant', content: 'An error occurred while processing your request.' }
+      ])
     } finally {
       setIsLoading(false)
     }
-  }, [
-    query,
-    isSignedIn,
-    anonymousQueriesCount,
-    createNewChat,
-    currentChatId,
-    chatHistories,
-    selectedModel,
-    messages,
-  ])
+  }, [query, isSignedIn, currentChatId, messages, user?.id, selectedModel])
 
   // Add useEffect to handle scrolling when messages change
   useEffect(() => {
@@ -315,13 +304,30 @@ export default function UnifiedMain() {
     }
   }
 
-  const selectChat = (chatId: string) => {
-    const selectedChat = chatHistories.find(chat => chat._id === chatId)
-    if (selectedChat) {
-      setCurrentChatId(chatId)
-      setMessages(selectedChat.messages)
+  const selectChat = async (chatId: string) => {
+    try {
+      // Fetch the latest chat data from the backend
+      const response = await axios.get(`/api/chats/${chatId}`);
+      const selectedChat = response.data;
+      
+      if (selectedChat) {
+        setCurrentChatId(chatId);
+        setMessages(selectedChat.messages);
+        // Update the chat in the local state
+        setChatHistories(prev => prev.map(chat => 
+          chat._id === chatId ? selectedChat : chat
+        ));
+      }
+    } catch (error) {
+      console.error('Error fetching chat:', error);
+      // Fallback to local state if API call fails
+      const localChat = chatHistories.find(chat => chat._id === chatId);
+      if (localChat) {
+        setCurrentChatId(chatId);
+        setMessages(localChat.messages);
+      }
     }
-  }
+  };
 
   const toggleHistorySidebar = () => {
     setIsHistorySidebarOpen(!isHistorySidebarOpen)
@@ -510,62 +516,6 @@ export default function UnifiedMain() {
     }
   };
 
-  const handleImageUpload = useCallback((file: File) => {
-    setSelectedImage(file)
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string)
-      // Add the image to the visionMessages
-      setVisionMessages(prev => [...prev, {
-        role: 'user',
-        content: [
-          {
-            type: 'image_url',
-            image_url: { url: reader.result as string }
-          }
-        ]
-      }])
-    }
-    reader.readAsDataURL(file)
-  }, [])
-
-  const handleVisionSearch = async () => {
-    if (!visionQuery) return
-
-    setIsVisionLoading(true)
-    try {
-      const newMessage = {
-        role: 'user' as const,
-        content: visionQuery
-      }
-      setVisionMessages(prev => [...prev, newMessage])
-
-      const response = await axios.post('/api/vision', {
-        messages: [...visionMessages, newMessage]
-      })
-
-      setVisionMessages(prev => [...prev, {
-        role: 'assistant' as const,
-        content: response.data.content
-      }])
-      setVisionQuery('')
-    } catch (error) {
-      console.error('Error processing vision request:', error)
-      setVisionMessages(prev => [...prev, {
-        role: 'assistant' as const,
-        content: 'An error occurred while processing your request.'
-      }])
-    } finally {
-      setIsVisionLoading(false)
-    }
-  }
-
-  const handleVisionKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !isVisionLoading) {
-      handleVisionSearch()
-    }
-  }
-
   // Reset shareable link when dialog closes
   useEffect(() => {
     if (!isShareDialogOpen) {
@@ -609,10 +559,9 @@ export default function UnifiedMain() {
               {[
                 { icon: PlusCircle, label: "New Chat", onClick: handleHistoryOrNewChat },
                 { icon: History, label: "History", onClick: handleHistoryClick },
-                { icon: Bookmark, label: "Bookmarks", onClick: handleBookmarkClick }, // Added Bookmark
+                { icon: Bookmark, label: "Bookmarks", onClick: handleBookmarkClick },
                 { icon: Brain, label: "Memory", onClick: () => setIsMemoryDialogOpen(true) },
                 { icon: TrendingUp, label: "Trending Topics", onClick: () => {} },
-                { icon: Bookmark, label: "Bookmarks", onClick: handleBookmarkClick }, // Duplicate removed
               ].map((item, index) => (
                 <Button 
                   key={index}
@@ -1041,411 +990,296 @@ export default function UnifiedMain() {
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-2 pb-16">
           <div className="max-w-4xl mx-auto h-full flex flex-col">
-            <Tabs defaultValue="focus" className="flex-1 flex flex-col" onValueChange={(value) => setActiveTab(value)}>
-              <TabsList className="mb-2 justify-start">
-                <TabsTrigger value="focus" className="px-4 py-1">Focus</TabsTrigger>
-                <TabsTrigger value="vision" className="px-4 py-1">Vision</TabsTrigger>
-                <TabsTrigger value="copilot" className="px-4 py-1">Copilot</TabsTrigger>
-              </TabsList>
-              <TabsContent value="focus" className="flex-1 overflow-hidden">
-                <Card className="h-full flex flex-col mb-6">
-                  <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
-                    <ScrollArea className="flex-1" ref={scrollAreaRef}>
-                      <div className="pt-4 pb-16">
-                        {messages.length > 0 ? (
-                          messages.map((message, index) => (
-                            <div 
-                              key={index} 
-                              className={`mb-4 ${
-                                message.role === 'user' ? 'flex justify-end' : 'flex justify-start'
-                              }`}
-                              ref={message.role === 'assistant' && index === messages.length - 1 ? latestAnswerRef : null}
-                            >
-                              {message.role === 'assistant' ? (
-                                <div className="flex items-start space-x-2 relative">
-                                  {/* AI Profile Picture */}
-                                  <div className="flex-shrink-0 w-5 h-5 mt-1">
-                                    <Sparkles className="h-4 w-4 text-green-500" />
-                                  </div>
-                                  <div className="relative w-full">
-                                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
-                                      {message.content}
-                                    </div>
-                                    {/* Optional: Add a loader or typing indicator */}
-                                    {isLoading && index === messages.length - 1 && (
-                                      <div className="loader">...</div>
-                                    )}
-                                    {/* Buttons container */}
-                                    <div className="absolute bottom-0 left-0 flex space-x-2">
-                                      {/* Copy Button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-5 w-5"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(message.content)
-                                          toast({
-                                            title: 'Copied!',
-                                            description: 'The message has been copied to your clipboard.',
-                                          })
-                                          // Change button text to "Copied!"
-                                          const button = document.querySelector(`#copy-button-${index}`) as HTMLButtonElement;
-                                          if (button) {
-                                            const originalContent = button.innerHTML;
-                                            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-600"><path d="M20 6 9 17l-5-5"/></svg>';
-                                            button.disabled = true;
-                                            setTimeout(() => {
-                                              button.innerHTML = originalContent;
-                                              button.disabled = false;
-                                            }, 2000);
-                                          }
-                                        }}
-                                        aria-label="Copy message"
-                                        id={`copy-button-${index}`}
-                                      >
-                                        <Clipboard className="h-4 w-4 text-gray-600" />
-                                      </Button>
-
-                                      {/* Re-run Button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-5 w-5"
-                                        onClick={() => {
-                                          handleReRun(index);
-                                        }}
-                                      >
-                                        <Repeat className="h-4 w-4 text-gray-600" />
-                                      </Button>
-
-                                      {/* Model Selection Button */}
-                                      <Select value={selectedModel} onValueChange={setSelectedModel}>
-                                        <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
-                                          <SelectValue>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
-                                              <Package className="h-4 w-4 mt-2 text-gray-600" />
-                                            </Button>
-                                          </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama </SelectItem>
-                                          <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
-                                          <SelectItem className="text-muted-foreground" value="llama-3.2-90b-text-preview">Meta Llama 3.2</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-
-                                      {/* Response Time Button (Response time:) */}
-                                      {responseTime !== null && (
-                                        <div className="relative flex items-center">
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-5 w-5 p-0"
-                                            onMouseEnter={() => setExpandedResponseTime(responseTime)}
-                                            onMouseLeave={() => setExpandedResponseTime(null)}
-                                            onClick={() => setExpandedResponseTime(expandedResponseTime === responseTime ? null : responseTime)}
-                                          >
-                                            <Clock className="h-4 w-4 text-gray-600" />
-                                          </Button>
-                                          <div 
-                                            className={`absolute left-full ml-1 transition-all duration-300 ease-in-out overflow-hidden ${
-                                              expandedResponseTime === responseTime ? 'w-40 opacity-100' : 'w-0 opacity-0'
-                                            }`}
-                                          >
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">
-                                              {responseTime}ms
-                                            </span>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
+            <Card className="h-full flex flex-col mb-6">
+              <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
+                <ScrollArea className="flex-1" ref={scrollAreaRef}>
+                  <div className="pt-4 pb-16">
+                    {messages.length > 0 ? (
+                      messages.map((message, index) => (
+                        <div 
+                          key={index} 
+                          className={`mb-4 ${
+                            message.role === 'user' ? 'flex justify-end' : 'flex justify-start'
+                          }`}
+                          ref={message.role === 'assistant' && index === messages.length - 1 ? latestAnswerRef : null}
+                        >
+                          {message.role === 'assistant' ? (
+                            <div className="flex items-start space-x-2 relative">
+                              {/* AI Profile Picture */}
+                              <div className="flex-shrink-0 w-5 h-5 mt-0.5">
+                                <Image src="/logo.png" alt="Unified AI" width={20} height={20} className="animate-logo-spin origin-center"/>
+                              </div>
+                              <div className="relative w-full">
+                                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
+                                  {message.content}
                                 </div>
-                              ) : (
-                                <div className="flex items-start space-x-2">
-                                  {/* User Message aligned to the right */}
-                                  <div className={`inline-block p-2 rounded-lg bg-green-100 relative group`}>
-                                    {editingMessageId === index ? (
-                                      <div className="flex items-center">
-                                        <Input
-                                          value={editedMessage}
-                                          onChange={(e) => setEditedMessage(e.target.value)}
-                                          className="mr-2"
-                                        />
-                                        <Button onClick={() => handleSaveEdit(index)} size="sm">Save</Button>
-                                      </div>
-                                    ) : (
-                                      <div className='flex -space-x-2'>
-                                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          onClick={() => handleEditMessage(index)}
-                                          className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
-                                        >
-                                          <Pencil className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
-                            {/* **Show Marquee and Initial Interface Only for Signed-In Users** */}
-                            {isSignedIn && (
-                              <>
-                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
-                                <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
-                                <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
-                                <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                      {randomQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
-                                      {scienceQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={100}>
-                                      {technologyQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                            {!isSignedIn && (
-                              <>
-                                <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
-                                <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
-                                <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
-                                <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                      {randomQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                      {scienceQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                  <div className="relative">
-                                    <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
-                                      {technologyQuestions.map((item, index) => (
-                                        <div
-                                          key={index}
-                                          className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                          onClick={() => handleQuestionClick(item.question)}
-                                        >
-                                          {item.emoji} {item.question}
-                                        </div>
-                                      ))}
-                                    </Marquee>
-                                  </div>
-                                </div>
-                                {!isSignedIn && (
-                                  <SignInButton mode="modal">
-                                    <p className="text-xs mt-4 text-green-500 cursor-pointer hover:underline px-4 md:px-0">
-                                      Sign in to save chat history and set AI memory
-                                    </p>
-                                  </SignInButton>
+                                {/* Optional: Add a loader or typing indicator */}
+                                {isLoading && index === messages.length - 1 && (
+                                  <div className="loader">...</div>
                                 )}
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="vision" className="flex-1 overflow-hidden">
-                <Card className="h-full flex flex-col mb-6">
-                  <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
-                    <ScrollArea className="flex-1" ref={scrollAreaRef}>
-                      <div className="pt-4 pb-16">
-                        {visionMessages.length > 0 ? (
-                          visionMessages.map((message, index) => (
-                            <div 
-                              key={index} 
-                              className={`mb-4 ${
-                                message.role === 'user' ? 'flex justify-end' : 'flex justify-start'
-                              }`}
-                            >
-                              {message.role === 'assistant' ? (
-                                <div className="flex items-start space-x-2 relative">
-                                  <div className="flex-shrink-0 w-5 h-5 mt-1">
-                                    <Sparkles className="h-4 w-4 text-green-500" />
-                                  </div>
-                                  <div className="relative w-full">
-                                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
-                                      {Array.isArray(message.content) 
-                                        ? message.content.map((content, i) => 
-                                            content.type === 'image_url' 
-                                              ? <img key={i} src={content.image_url?.url} alt="Uploaded" className="max-w-full h-auto max-h-64 rounded-lg mb-2" />
-                                              : <p key={i}>{content.text}</p>
-                                          )
-                                        : message.content
+                                {/* Buttons container */}
+                                <div className="absolute bottom-0 left-0 flex space-x-2">
+                                  {/* Copy Button */}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(message.content)
+                                      toast({
+                                        title: 'Copied!',
+                                        description: 'The message has been copied to your clipboard.',
+                                      })
+                                      // Change button text to "Copied!"
+                                      const button = document.querySelector(`#copy-button-${index}`) as HTMLButtonElement;
+                                      if (button) {
+                                        const originalContent = button.innerHTML;
+                                        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-600"><path d="M20 6 9 17l-5-5"/></svg>';
+                                        button.disabled = true;
+                                        setTimeout(() => {
+                                          button.innerHTML = originalContent;
+                                          button.disabled = false;
+                                        }, 2000);
                                       }
+                                    }}
+                                    aria-label="Copy message"
+                                    id={`copy-button-${index}`}
+                                  >
+                                    <Clipboard className="h-4 w-4 text-gray-600" />
+                                  </Button>
+
+                                  {/* Re-run Button */}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={() => {
+                                      handleReRun(index);
+                                    }}
+                                  >
+                                    <Repeat className="h-4 w-4 text-gray-600" />
+                                  </Button>
+
+                                  {/* Model Selection Button */}
+                                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                                    <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
+                                      <SelectValue>
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
+                                          <Package className="h-4 w-4 mt-2 text-gray-600" />
+                                        </Button>
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama </SelectItem>
+                                      <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
+                                      <SelectItem className="text-muted-foreground" value="llama-3.2-90b-text-preview">Meta Llama 3.2</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+
+                                  {/* Response Time Button (Response time:) */}
+                                  {responseTime !== null && (
+                                    <div className="relative flex items-center">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5 p-0"
+                                        onMouseEnter={() => setExpandedResponseTime(responseTime)}
+                                        onMouseLeave={() => setExpandedResponseTime(null)}
+                                        onClick={() => setExpandedResponseTime(expandedResponseTime === responseTime ? null : responseTime)}
+                                      >
+                                        <Clock className="h-4 w-4 text-gray-600" />
+                                      </Button>
+                                      <div 
+                                        className={`absolute left-full ml-1 transition-all duration-300 ease-in-out overflow-hidden ${
+                                          expandedResponseTime === responseTime ? 'w-40 opacity-100' : 'w-0 opacity-0'
+                                        }`}
+                                      >
+                                        <span className="text-xs text-gray-600 whitespace-nowrap">
+                                          {responseTime}ms
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
-                              ) : (
-                                <div className="flex items-start space-x-2">
-                                  <div className="inline-block relative group">
-                                    {Array.isArray(message.content) 
-                                      ? message.content.map((content, i) => 
-                                        content.type === 'image_url' 
-                                          ? <img key={i} src={content.image_url?.url} alt="Uploaded" className="max-w-full h-auto max-h-64 rounded-lg mb-2" />
-                                            : <div key={i} className="p-2 rounded-lg bg-green-100 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{content.text}</div>
-                                        )
-                                      : <div className="p-2 rounded-lg bg-green-100 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</div>
-                                    }
-                                  </div>
-                                </div>
-                              )}
+                              </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
+                          ) : (
+                            <div className="flex items-start space-x-2">
+                              {/* User Message aligned to the right */}
+                              <div className={`inline-block p-2 rounded-lg bg-green-100 relative group`}>
+                                {editingMessageId === index ? (
+                                  <div className="flex items-center">
+                                    <Input
+                                      value={editedMessage}
+                                      onChange={(e) => setEditedMessage(e.target.value)}
+                                      className="mr-2"
+                                    />
+                                    <Button onClick={() => handleSaveEdit(index)} size="sm">Save</Button>
+                                  </div>
+                                ) : (
+                                  <div className='flex -space-x-2'>
+                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleEditMessage(index)}
+                                      className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
+                        {/* **Show Marquee and Initial Interface Only for Signed-In Users** */}
+                        {isSignedIn && (
+                          <>
                             <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
-                            <p className="text-sm md:text-base font-medium">Upload an image and ask questions about it!</p>
-                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Our AI will analyze the image and provide insights</p>
-                            <div className="w-64 h-32 mb-4">
-                              <FileUploader onFileSelect={handleImageUpload} />
+                            <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
+                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
+                            <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                  {randomQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
+                                  {scienceQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={100}>
+                                  {technologyQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
                             </div>
-                          </div>
+                          </>
+                        )}
+                        {!isSignedIn && (
+                          <>
+                            <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
+                            <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
+                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
+                            <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                  {randomQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
+                                  {scienceQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
+                              <div className="relative">
+                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
+                                  {technologyQuestions.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
+                                      onClick={() => handleQuestionClick(item.question)}
+                                    >
+                                      {item.emoji} {item.question}
+                                    </div>
+                                  ))}
+                                </Marquee>
+                              </div>
+                            </div>
+                            {!isSignedIn && (
+                              <SignInButton mode="modal">
+                                <p className="text-xs mt-4 text-green-500 cursor-pointer hover:underline px-4 md:px-0">
+                                  Sign in to save chat history and set AI memory
+                                </p>
+                              </SignInButton>
+                            )}
+                          </>
                         )}
                       </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="copilot" className="flex-1 overflow-hidden">
-                <Card className="h-full">
-                  <CardContent className="p-3 h-full flex items-center justify-center">
-                    <p className="text-center text-gray-500 text-sm">This feature is coming soon. Stay tuned for updates!</p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         </main>
 
         {/* Bottom Search Bar - Only show for Focus and Copilot tabs */}
-        {activeTab !== "vision" && (
-          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
-            <div className="max-w-4xl mx-auto w-full flex justify-center">
-              <div className="relative w-full max-w-2xl">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Input
-                  type="text"
-                  placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200  text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={isSearchDisabled}
-                />
-                <Button 
-                  size="sm" 
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
-                  onClick={() => handleSearch()}
-                  disabled={isLoading || isSearchDisabled}
-                >
-                  {isLoading ? (
-                    'Searching...'
-                  ) : (
-                    <div className="flex items-center">
-                      Ask <ChevronRight className="h-3 w-3 ml-1" />
-                    </div>
-                  )}
-                </Button>
-              </div>
+        <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
+          <div className="max-w-4xl mx-auto w-full flex justify-center">
+            <div className="relative w-full max-w-2xl">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                type="text"
+                placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
+                className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200  text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isSearchDisabled}
+              />
+              <Button 
+                size="sm" 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
+                onClick={() => handleSearch()}
+                disabled={isLoading || isSearchDisabled}
+              >
+                {isLoading ? (
+                  'Searching...'
+                ) : (
+                  <div className="flex items-center">
+                    Ask <ChevronRight className="h-3 w-3 ml-1" />
+                  </div>
+                )}
+              </Button>
             </div>
           </div>
-        )}
-
-        {/* Bottom Search Bar for Vision tab */}
-        {activeTab === "vision" && (
-          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
-            <div className="max-w-4xl mx-auto w-full flex justify-center">
-              <div className="relative w-full max-w-2xl">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Input
-                  type="text"
-                  placeholder="Ask about the image..."
-                  value={visionQuery}
-                  onChange={(e) => setVisionQuery(e.target.value)}
-                  onKeyDown={handleVisionKeyDown}
-                  className="pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200 focus:border-green-500 transition-colors text-gray-800 bg-white shadow-lg w-full"
-                />
-                <Button 
-                  size="sm" 
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
-                  onClick={handleVisionSearch}
-                  disabled={isVisionLoading}
-                >
-                  {isVisionLoading ? (
-                    'Analyzing...'
-                  ) : (
-                    <div className="flex items-center">
-                      Ask <ChevronRight className="h-3 w-3 ml-1" />
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Feedback Component */}

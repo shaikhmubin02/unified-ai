@@ -68,3 +68,27 @@ export async function PUT(request: NextRequest, { params }: { params: { chatId: 
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export async function GET(request: NextRequest, { params }: { params: { chatId: string } }) {
+  const { chatId } = params
+  const { userId } = getAuth(request)
+
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    await dbConnect()
+
+    const chat = await ChatHistory.findOne({ _id: chatId, userId })
+
+    if (!chat) {
+      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(chat, { status: 200 })
+  } catch (error) {
+    console.error('Error fetching chat:', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  }
+}
