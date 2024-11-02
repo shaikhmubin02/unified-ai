@@ -48,7 +48,7 @@ interface ChatHistory {
   sharedFromShareId?: string
 }
 
-export default function Neuronpage() {
+export default function UnifiedMain() {
   const [query, setQuery] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
