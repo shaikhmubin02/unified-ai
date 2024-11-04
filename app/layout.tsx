@@ -7,6 +7,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -37,6 +38,7 @@ export default function RootLayout({
         layout: {
           unsafe_disableDevelopmentModeWarnings: true,
         },
+        baseTheme: dark
       }}
     >
       <html lang="en">

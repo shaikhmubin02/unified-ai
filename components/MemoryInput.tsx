@@ -27,20 +27,19 @@ export function MemoryInput({ initialMemory, onSave, maxCharacters }: MemoryInpu
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2 text-green-600">
-        <Brain className="h-5 w-5" />
-        <span className="font-semibold">AI Memory Input</span>
-      </div>
       <Textarea
         placeholder="Enter instructions or context for the AI to remember..."
         value={memory}
         onChange={handleChange}
         rows={6}
-        className="w-full p-3 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 ease-in-out"
+        className="w-full p-3 text-gray-200 font-light bg-[#2a2b2e] border border-gray-800 rounded-lg focus:outline-none focus:text-gray-100 scrollbar-hide resize-none transition duration-200 ease-in-out"
       />
-      <div className="flex justify-between items-center text-sm text-gray-500">
+      <div className="flex justify-between items-center text-sm font-light text-gray-400">
         <span>{memory.length} / {maxCharacters} characters</span>
-        <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out">
+        <Button 
+          onClick={handleSave} 
+          className="bg-[#1f8b81] hover:bg-[#106968] text-gray-100 transition duration-200 ease-in-out"
+        >
           Save Memory
         </Button>
       </div>

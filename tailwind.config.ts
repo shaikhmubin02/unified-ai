@@ -70,6 +70,9 @@ const config: Config = {
   			rainbow: 'rainbow var(--speed, 2s) infinite linear',
   			gradient: 'gradient 8s ease infinite',
   			'logo-spin': 'logo-spin 5s ease-in-out infinite',
+  			'logo-spin-5': 'logo-spin 5s ease-in-out infinite',
+  			'logo-spin-8': 'logo-spin 8s ease-in-out infinite',
+			'logo-spin-10': 'logo-spin 10s ease-in-out infinite',
   		},
   		keyframes: {
   			marquee: {

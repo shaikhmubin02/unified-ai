@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock, BookmarkCheck } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock, BookmarkCheck, Plus, ListFilter, ArrowRight, BrainCircuit, HelpCircle, ChevronUp } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -31,6 +31,9 @@ import { ModeToggle } from './Modetoggle'
 import { FileUploader } from './FileUploader'
 import { KeyboardEvent } from 'react'
 import Image from 'next/image'
+import Loader from './Loader'
+import Link from 'next/link'
+import TypingAnimation from './ui/typing-animation'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -78,18 +81,21 @@ export default function UnifiedMain() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
+  const [isLoadingHistories, setIsLoadingHistories] = useState(true)
 
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
         // Fetch chat histories from API
         const fetchChatHistories = async () => {
+          setIsLoadingHistories(true)
           try {
             const response = await axios.get('/api/chats')
             setChatHistories(response.data)
-            // Removed createNewChat() to prevent automatic chat creation on sign-in
           } catch (error) {
             console.error('Error fetching chat histories:', error)
+          } finally {
+            setIsLoadingHistories(false)
           }
         }
 
@@ -145,7 +151,6 @@ export default function UnifiedMain() {
         setChatHistories(prev => [response.data, ...prev])
         setCurrentChatId(response.data._id)
         setMessages([])
-        setIsHistorySidebarOpen(true)
       } catch (error) {
         console.error('Error creating new chat:', error)
       }
@@ -170,8 +175,8 @@ export default function UnifiedMain() {
 
   const handleNewChat = () => {
     createNewChat()
-    setIsHistorySidebarOpen(true)
-    setIsBookmarkSidebarOpen(false) // Close bookmark sidebar if open
+    // setIsHistorySidebarOpen(true)
+    // setIsBookmarkSidebarOpen(false) // Close bookmark sidebar if open
   }
 
   const handleSearch = useCallback(async (searchQuery?: string, editedMessageIndex?: number) => {
@@ -396,7 +401,7 @@ export default function UnifiedMain() {
 
   const handleHistoryOrNewChat = () => {
     if (!isSignedIn) {
-      setIsSignInAlertOpen(true)
+      setIsSignInAlertOpen(false)
     } else {
       handleNewChat()
     }
@@ -524,7 +529,7 @@ export default function UnifiedMain() {
   }, [isShareDialogOpen]);
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex h-screen bg-[#191a1a]">
       {/* Mobile Sidebar */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetTrigger asChild>
@@ -602,195 +607,205 @@ export default function UnifiedMain() {
       </Sheet>
 
       {/* Main Sidebar (hidden on mobile) */}
-      <div className="w-12 bg-white border-r border-gray-200 p-2 hidden md:flex flex-col items-center shadow-sm fixed h-full z-20">
-        {/* Top section */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="flex-1 flex items-center justify-center mt-3">
-            <Sparkles className="h-6 w-6 text-green-500" />
+      <div className="w-56 bg-[#202222] border-r border-gray-800 p-2 hidden md:flex flex-col items-start shadow-sm fixed h-full z-20">
+        {/* Top section with logo and new chat */}
+        <div className="flex flex-col items-start space-y-4 w-full">
+          <div className="flex-2 flex items-start justify-start space-x-2 mt-1 w-full ml-2">
+            <Image src="/logo.png" alt="Unified AI" width={30} height={30} /> 
+            <p className="text-gray-300 font-serif font-normal mt-1 mb-3">Unified AI</p>
           </div>
-          <div className="w-8 h-px bg-gray-200 mb-2"></div>
+          {/* <div className="w-full h-px bg-gray-200 mb-2"></div> */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                  onClick={handleHistoryOrNewChat}
+                <Button
+                  className="border border-gray-700 bg-[#2d2f2f] shadow-none text-gray-300 hover:bg-[#2d2f2f] hover:text-white rounded-xl px-3 py-1.5 text-sm font-medium ml-2"
+                  onClick={handleNewChat}
                 >
-                  <PlusCircle className="h-4 w-4 text-gray-600" />
-                  <span className="sr-only">New Chat</span>
+                  <Plus className="h-4 w-4 text-gray-300 mr-2 -ml-1" />
+                  New Chat
+                  
                 </Button>
+                {/* <Button
+                  variant="ghost"
+                  className="bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 rounded-md px-3 py-1.5 text-sm font-medium ml-2"
+                  onClick={handleNewChat}
+                >
+                  <Plus className="h-4 w-4 text-gray-300 mr-2" />
+                  New Chat
+                  
+                </Button> */}
               </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-8 '>
                 <p>New Chat</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                  onClick={handleHistoryClick}
-                >
-                  <History className="h-4 w-4 text-gray-600" />
-                  <span className="sr-only">History</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                <p>History</p>
-              </TooltipContent>
-            </Tooltip>
           </TooltipProvider>
         </div>
-        {/* Middle section */}
-        <div className="flex-1 flex flex-col items-center justify-center mb-10">
-          <nav className="flex flex-col items-center space-y-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Dialog open={isMemoryDialogOpen} onOpenChange={setIsMemoryDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="ghost"  
-                        size="icon" 
-                        className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
+
+        <p className="ml-2 text-gray-300 font-mono font-thin text-sm -mb-3 mt-2">Recents</p>
+
+        {/* Chat History Card - Scrollable */}
+        <div className="flex-1 w-full mt-4 mb-4 overflow-hidden">
+          <Card className="bg-[#1a1b1e] border-gray-800 h-full">
+            <ScrollArea 
+              className="h-[calc(100vh-280px)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:hidden active:[&::-webkit-scrollbar]:block hover:[&::-webkit-scrollbar]:block [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full"
+            >
+              <div className="p-2 space-y-0.5">
+                {isLoadingHistories ? (
+                  <div className="flex justify-center items-center py-4 mt-32">
+                    <Loader />
+                  </div>
+                ) : (
+                  chatHistories.map(chat => (
+                    <div key={chat._id} className="flex items-center group">
+                      <Button
+                        variant={chat._id === currentChatId ? "secondary" : "ghost"}
+                        className={`flex-grow justify-start text-left truncate text-xs font-thin max-w-[76%] min-h-0 h-7 ${
+                          chat._id === currentChatId ? 'text-gray-300 bg-[#2d2f2f]' : 'text-gray-400 hover:bg-[#2d2f2f]'
+                        } px-2`}
+                        onClick={() => selectChat(chat._id)}
                       >
-                        <Brain className="h-4 w-4 text-gray-600" />
-                        <span className="sr-only">Memory</span>
+                        {chat.title}
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[550px] bg-white border-none shadow-lg">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-gray-900">AI Memory</DialogTitle>
-                        <DialogDescription className="text-gray-600">
-                          Set instructions or context for the AI to remember across all conversations.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <MemoryInput initialMemory={memory} onSave={saveMemory} maxCharacters={10000} />
-                      <DialogFooter className="mt-6">
-                        <div className="text-sm text-gray-500">
-                          This memory will be applied to all future conversations.
-                        </div>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </TooltipTrigger>
-                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                  <p>Memory</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                    onClick={() => {/* Add trending topics functionality */}}
-                  >
-                    <TrendingUp className="h-4 w-4 text-gray-600" />
-                    <span className="sr-only">Trending Topics</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                  <p>Trending Topics</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                  onClick={handleBookmarkClick} // Bookmark Button Click Handler
-                >
-                  <Bookmark className="h-4 w-4 text-gray-600" />
-                  <span className="sr-only">Bookmarks</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                <p>Bookmarks</p>
-              </TooltipContent>
-            </Tooltip>
-            </TooltipProvider>
-          </nav>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-6 w-6 opacity-0 group-hover:opacity-100 rounded-full hover:bg-[#3d3f3f] transition-all ${
+                              chat._id === currentChatId ? 'opacity-100' : 'opacity-0'
+                            }`}
+                          >
+                            <MoreVertical className="h-3 w-3 text-gray-300" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className='font-mono'>
+                          <DropdownMenuItem onClick={() => handleEditTitle(chat._id, chat.title)}>
+                            <Edit2 className='h-4 w-4 ml-1 mr-2' />
+                            Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleBookmark(chat)}>
+                            {chat.isBookmarked ? (
+                              <>
+                                <BookmarkCheck className='h-4 w-4 ml-1 mr-2' />
+                                Remove Bookmark
+                              </>
+                            ) : (
+                              <>
+                                <Bookmark className='h-4 w-4 ml-1 mr-2' />
+                                Bookmark
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleShareChat(chat)}>
+                            <Share2 className='h-4 w-4 ml-1 mr-2' />
+                            Share
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => deleteChat(chat._id)} className="text-red-600">
+                            <Trash2 className='h-4 w-4 ml-1 mr-2' />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </Card>
         </div>
 
-        {/* Bottom section */}
-        <div className="mt-auto flex flex-col items-center space-y-4">
+        {/* Bottom Tools Section */}
+        <div className="w-full space-y-2 mt-5">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                {/* <ModeToggle /> */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+                  onClick={() => setIsMemoryDialogOpen(true)}
+                >
+                  <BrainCircuit className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-400">Memory</span>
+                </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                <p>Theme</p>
-              </TooltipContent> 
-            </Tooltip>
-            {/* New Navigation Menu Dropdown */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors"
-                    >
-                      <CircleEllipsisIcon className="h-5 w-5 text-gray-600" />
-                      <span className="sr-only">Navigation</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className='font-mono ml-3'>
-                    <DropdownMenuItem onClick={() => router.push('/landing')}>
-                      🏠
-                      About
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/landing/pricing')}>
-                      💲
-                      Pricing
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/docs')}>
-                      📃
-                      Docs
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/landing/blog')}>
-                      📖
-                      Blog
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                <p>Navigation</p>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
+                <p>Memory</p>
               </TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
-                {isSignedIn ? (
-                  <UserButton />
-                ) : (
-                  <SignInButton mode="modal">
-                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-green-50 transition-colors">
-                      <User className="h-4 w-4 text-gray-600" />
-                    </Button>
-                  </SignInButton>
-                )}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+                  onClick={handleBookmarkClick}
+                >
+                  <Bookmark className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-400">Bookmarks</span>
+                </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-600 bg-white border-1 shadow-md'>
-                <p>{isSignedIn ? 'Account' : 'Sign In'}</p>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
+                <p>Bookmarks</p>
               </TooltipContent>
             </Tooltip>
+
+            {/* <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+                >
+                  <TrendingUp className="h-4 w-4 text-gray-300" />
+                  <span className="text-gray-300">Trending</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
+                <p>Trending Topics</p>
+              </TooltipContent>
+            </Tooltip> */}
           </TooltipProvider>
+
+          {/* User Section */}
+          <div className="pt-2 border-t border-gray-700 ml-1">
+            {/* {isSignedIn ? (
+              <div className="flex items-center space-x-2">
+                <UserButton />
+                <p className="text-gray-300 text-sm">
+                  {user?.fullName || user?.firstName}
+                </p>
+              </ div>
+            ) : (
+              <SignInButton mode="modal">
+                <Button variant="ghost" className="w-full justify-start space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>Sign In</span>
+                </Button>
+              </SignInButton>
+            )} */}
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start space-x-2 text-gray-300 hover:text-white hover:bg-[#2d2f2f]"
+              onClick={() => router.push('/landing/pricing')}
+            >
+              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-700 -ml-3">
+                <Package className="h-5 w-5 text-gray-400 animate-logo-spin-8 origin-center" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-medium text-start text-gray-300">Upgrade plan</span>
+                <span className="text-[10px] text-start text-gray-400">Access a range of top models</span>
+              </div>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* History Sidebar - Only show for signed-in users */}
       {isSignedIn && (
-        <div className={`w-56 lg:ml-12 bg-white border-r border-gray-200 fixed h-full transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
+        <div className={`w-56 lg:ml-12 bg-[#1a1b1e] border-r border-gray-800 fixed h-full transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
           <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
-            <p className="text-gray-600 font-serif font-normal">Previous Chats</p>
+            <p className="text-gray-300 font-serif font-normal">Previous Chats</p>
             <Button
               variant="ghost"
               size="icon"
@@ -837,10 +852,9 @@ export default function UnifiedMain() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                            className="h-8 w-8 opacity-40 group-hover:opacity-100 rounded-full hover:bg-[#3d3f3f] transition-all"
                           >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">More options</span>
+                            <MoreVertical className="h-3 w-3 text-gray-300" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className='font-mono'>
@@ -882,9 +896,9 @@ export default function UnifiedMain() {
 
       {/* Bookmark Sidebar - Only show for signed-in users */}
       {isSignedIn && (
-        <div className={`w-56 lg:ml-12 bg-white border-r border-gray-200 fixed h-full transition-transform duration-300 ease-in-out ${isBookmarkSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
+        <div className={`w-56 lg:ml-12 bg-[#1a1b1e] border-r border-gray-800 fixed h-full transition-transform duration-300 ease-in-out ${isBookmarkSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
           <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
-            <p className="text-gray-600 font-serif font-normal">Bookmarked Chats</p>
+            <p className="text-gray-300 font-serif font-normal">Bookmarked Chats</p>
             <Button
               variant="ghost"
               size="icon"
@@ -931,10 +945,9 @@ export default function UnifiedMain() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+                            className="h-8 w-8 opacity-40 group-hover:opacity-100 rounded-full hover:bg-[#3d3f3f] transition-all"
                           >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">More options</span>
+                            <MoreVertical className="h-3 w-3 text-gray-300" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className='font-mono'>
@@ -979,20 +992,28 @@ export default function UnifiedMain() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden md:ml-12">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 py-2 px-3 shadow-sm sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-xl font-bold text-gray-800">Neuron AI</h1>
-            <p className="text-xs text-gray-600">Get answers at lightning speed. (hypothetically)</p>
-          </div>
-        </header>
+        {/* Remove the header section and add Feedback button in top-right */}
+        <div className="fixed top-3 right-4 z-20 flex items-center space-x-2">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-[#2d2f2f]">
+                <User className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <Feedback />
+        </div>
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-2 pb-16">
-          <div className="max-w-4xl mx-auto h-full flex flex-col">
-            <Card className="h-full flex flex-col mb-6">
-              <CardContent className="p-3 flex-1 overflow-hidden flex flex-col">
-                <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        {/* Content Area - adjust top padding since header is removed */}
+        <main className="flex-1 overflow-y-auto p-2 pb-16 pt-4 md:ml-48">
+          <div className="max-w-3xl mx-auto h-full flex flex-col">
+            <Card className="flex flex-col mb-6 bg-transparent border-none shadow-none">
+              <CardContent className="p-3 flex flex-col">
+                <ScrollArea className="w-full">
                   <div className="pt-4 pb-16">
                     {messages.length > 0 ? (
                       messages.map((message, index) => (
@@ -1007,10 +1028,10 @@ export default function UnifiedMain() {
                             <div className="flex items-start space-x-2 relative">
                               {/* AI Profile Picture */}
                               <div className="flex-shrink-0 w-5 h-5 mt-0.5">
-                                <Image src="/logo.png" alt="Unified AI" width={20} height={20} className="animate-logo-spin origin-center"/>
+                                <Image src="/logo.png" alt="Unified AI" width={20} height={20} className="animate-logo-spin-8 origin-center"/>
                               </div>
                               <div className="relative w-full">
-                                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-8">
+                                <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap pb-8">
                                   {message.content}
                                 </div>
                                 {/* Optional: Add a loader or typing indicator */}
@@ -1023,7 +1044,7 @@ export default function UnifiedMain() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-5 w-5"
+                                    className="h-5 w-5 hover:bg-[#2d2f2f]"
                                     onClick={() => {
                                       navigator.clipboard.writeText(message.content)
                                       toast({
@@ -1045,27 +1066,27 @@ export default function UnifiedMain() {
                                     aria-label="Copy message"
                                     id={`copy-button-${index}`}
                                   >
-                                    <Clipboard className="h-4 w-4 text-gray-600" />
+                                    <Clipboard className="h-4 w-4 text-gray-400" />
                                   </Button>
 
                                   {/* Re-run Button */}
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-5 w-5"
+                                    className="h-5 w-5 hover:bg-[#2d2f2f]"
                                     onClick={() => {
                                       handleReRun(index);
                                     }}
                                   >
-                                    <Repeat className="h-4 w-4 text-gray-600" />
+                                    <Repeat className="h-4 w-4 text-gray-400" />
                                   </Button>
 
                                   {/* Model Selection Button */}
                                   <Select value={selectedModel} onValueChange={setSelectedModel}>
                                     <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
                                       <SelectValue>
-                                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0">
-                                          <Package className="h-4 w-4 mt-2 text-gray-600" />
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 p-0 hover:bg-[#2d2f2f]">
+                                          <Package className="h-4 w-4 mt-2 text-gray-400" />
                                         </Button>
                                       </SelectValue>
                                     </SelectTrigger>
@@ -1082,19 +1103,19 @@ export default function UnifiedMain() {
                                       <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-5 w-5 p-0"
+                                        className="h-5 w-5 p-0 hover:bg-[#2d2f2f]"
                                         onMouseEnter={() => setExpandedResponseTime(responseTime)}
                                         onMouseLeave={() => setExpandedResponseTime(null)}
                                         onClick={() => setExpandedResponseTime(expandedResponseTime === responseTime ? null : responseTime)}
                                       >
-                                        <Clock className="h-4 w-4 text-gray-600" />
+                                        <Clock className="h-4 w-4 text-gray-400" />
                                       </Button>
                                       <div 
                                         className={`absolute left-full ml-1 transition-all duration-300 ease-in-out overflow-hidden ${
                                           expandedResponseTime === responseTime ? 'w-40 opacity-100' : 'w-0 opacity-0'
                                         }`}
                                       >
-                                        <span className="text-xs text-gray-600 whitespace-nowrap">
+                                        <span className="text-xs text-gray-400 whitespace-nowrap">
                                           {responseTime}ms
                                         </span>
                                       </div>
@@ -1106,7 +1127,7 @@ export default function UnifiedMain() {
                           ) : (
                             <div className="flex items-start space-x-2">
                               {/* User Message aligned to the right */}
-                              <div className={`inline-block p-2 rounded-lg bg-green-100 relative group`}>
+                              <div className={`inline-block p-2 rounded-lg bg-[#2a2b2e] relative group`}>
                                 {editingMessageId === index ? (
                                   <div className="flex items-center">
                                     <Input
@@ -1118,14 +1139,14 @@ export default function UnifiedMain() {
                                   </div>
                                 ) : (
                                   <div className='flex -space-x-2'>
-                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                    <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">{message.content}</p>
                                     <Button
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => handleEditMessage(index)}
-                                      className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                                      className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full opacity-0 hover:bg-[#2d2f2f] group-hover:opacity-100 transition-opacity rounded-full"
                                     >
-                                      <Pencil className="h-4 w-4" />
+                                      <Pencil className="h-4 w-4 text-gray-300" />
                                     </Button>
                                   </div>
                                 )}
@@ -1135,111 +1156,150 @@ export default function UnifiedMain() {
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center mt-8 md:mt-12 lg:mt-16">
-                        {/* **Show Marquee and Initial Interface Only for Signed-In Users** */}
-                        {isSignedIn && (
-                          <>
-                            <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
-                            <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
-                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
-                            <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                  {randomQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
-                                  {scienceQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={100}>
-                                  {technologyQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
+                      <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center">
+                        {/* Container for both input and focus button */}
+                        <div className="relative mb-8 w-full max-w-2xl mr-40">
+                          {/* New Search Input Component */}
+                          <div className="w-full mt-28">
+                            <TypingAnimation
+                              className="text-gray-300 text-xl font-mono mb-4"
+                              text="Which AI genius should we wake up today?☕️"
+                            />
+                            <div className="flex flex-col gap-2 p-2 rounded-md border border-gray-700 bg-[#202222]">
+                              <Input
+                                className="bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder-gray-400"
+                                placeholder="Ask anything..."
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
+                              />
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white hover:bg-transparent">
+                                    <ListFilter className="h-4 w-4" />
+                                    <span className="sr-only">Focus</span>
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white hover:bg-transparent">
+                                    <Plus className="h-4 w-4" />
+                                    <span className="sr-only">Attach</span>
+                                  </Button>
+                                </div>
+                                <div className="flex items-center gap-2">  
+                                  <Button 
+                                    size="icon" 
+                                    className="bg-[#106968] hover:bg-gray-600 text-white rounded-full" 
+                                    onClick={() => handleSearch()}
+                                    disabled={isLoading || isSearchDisabled || !query.trim()}
+                                  >
+                                    <ArrowRight className="h-4 w-4 text-gray-100" />
+                                    <span className="sr-only">Ask</span>
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </>
-                        )}
-                        {!isSignedIn && (
-                          <>
-                            <Sparkles className="h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 text-green-500 mb-2" />
-                            <p className="text-sm md:text-base font-medium">Ask a question to get started!</p>
-                            <p className="text-xs mt-1 mb-4 px-4 md:px-0">Type your query in the search bar below or choose from our suggestions</p>
-                            <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 mt-3 px-2 md:px-4 lg:px-0">
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                  {randomQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-blue-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={80}>
-                                  {scienceQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-green-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
-                              <div className="relative">
-                                <Marquee className="py-1 md:py-2 rounded" pauseOnHover={true} repeat={2} speed={90}>
-                                  {technologyQuestions.map((item, index) => (
-                                    <div
-                                      key={index}
-                                      className="mx-2 md:mx-3 lg:mx-4 cursor-pointer hover:text-purple-500 transition-colors whitespace-nowrap text-xs md:text-sm"
-                                      onClick={() => handleQuestionClick(item.question)}
-                                    >
-                                      {item.emoji} {item.question}
-                                    </div>
-                                  ))}
-                                </Marquee>
-                              </div>
+                          </div>
+                        </div>
+
+                        {/* Rest of the marquee content */}
+                        <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3">
+                          {/* Random Questions Marquee */}
+                          <div className="relative">
+                            <Marquee 
+                              className="py-1.5" 
+                              pauseOnHover={true} 
+                              repeat={2} 
+                              speed={80}
+                              gradient={true}
+                              gradientColor={[26, 27, 30]}  // This should match your bg color
+                            >
+                              {randomQuestions.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="mx-6 cursor-pointer group"
+                                  onClick={() => handleQuestionClick(item.question)}
+                                >
+                                  <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors duration-200">
+                                    {item.emoji} {item.question}
+                                  </span>
+                                </div>
+                              ))}
+                            </Marquee>
+                          </div>
+
+                          {/* Science Questions Marquee */}
+                          <div className="relative">
+                            <Marquee 
+                              className="py-1.5" 
+                              pauseOnHover={true} 
+                              repeat={2} 
+                              speed={90}
+                              gradient={true}
+                              gradientColor={[26, 27, 30]}
+                            >
+                              {scienceQuestions.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="mx-6 cursor-pointer group"
+                                  onClick={() => handleQuestionClick(item.question)}
+                                >
+                                  <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors duration-200">
+                                    {item.emoji} {item.question}
+                                  </span>
+                                </div>
+                              ))}
+                            </Marquee>
+                          </div>
+
+                          {/* Technology Questions Marquee */}
+                          <div className="relative">
+                            <Marquee 
+                              className="py-1.5" 
+                              pauseOnHover={true} 
+                              repeat={2} 
+                              speed={100}
+                              gradient={true}
+                              gradientColor={[26, 27, 30]}
+                            >
+                              {technologyQuestions.map((item, index) => (
+                                <div
+                                  key={index}
+                                  className="mx-6 cursor-pointer group"
+                                  onClick={() => handleQuestionClick(item.question)}
+                                >
+                                  <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors duration-200">
+                                    {item.emoji} {item.question}
+                                  </span>
+                                </div>
+                              ))}
+                            </Marquee>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <footer className={`fixed bottom-0 border-none bg-none px-6 py-4 mr-36`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                              <Link href="#" className="hover:text-white">
+                                Pro
+                              </Link>
+                              <Link href="#" className="hover:text-white">
+                                Enterprise
+                              </Link>
+                              <Link href="#" className="hover:text-white">
+                                Store
+                              </Link>
+                              <Link href="#" className="hover:text-white">
+                                Blog
+                              </Link>
                             </div>
-                            {!isSignedIn && (
-                              <SignInButton mode="modal">
-                                <p className="text-xs mt-4 text-green-500 cursor-pointer hover:underline px-4 md:px-0">
-                                  Sign in to save chat history and set AI memory
-                                </p>
-                              </SignInButton>
-                            )}
-                          </>
-                        )}
+                            <div className="flex items-center gap-4">
+                              <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-400 hover:bg-transparent hover:text-gray-300">
+                                English (English)
+                                <ChevronDown className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </footer>
                       </div>
                     )}
                   </div>
@@ -1249,48 +1309,47 @@ export default function UnifiedMain() {
           </div>
         </main>
 
-        {/* Bottom Search Bar - Only show for Focus and Copilot tabs */}
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-gray-100 to-transparent md:ml-12">
-          <div className="max-w-4xl mx-auto w-full flex justify-center">
-            <div className="relative w-full max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                type="text"
-                placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-200  text-gray-800 bg-white shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isSearchDisabled}
-              />
-              <Button 
-                size="sm" 
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2"
-                onClick={() => handleSearch()}
-                disabled={isLoading || isSearchDisabled}
-              >
-                {isLoading ? (
-                  'Searching...'
-                ) : (
-                  <div className="flex items-center">
-                    Ask <ChevronRight className="h-3 w-3 ml-1" />
-                  </div>
-                )}
-              </Button>
+        {/* Bottom Search Bar */}
+        {messages.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-[#0e1011] to-transparent md:ml-56">
+            <div className="max-w-3xl mx-auto w-full flex justify-center">
+              <div className="relative w-full max-w-2xl">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="text"
+                  placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
+                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-700 text-gray-300 bg-[#1a1b1e] shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={isSearchDisabled}
+                />
+                <Button 
+                  size="sm" 
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full text-xs px-4 py-2 bg-[#106968] hover:bg-gray-600 text-white"
+                  onClick={() => handleSearch()}
+                  disabled={isLoading || isSearchDisabled}
+                >
+                  {isLoading ? (
+                    'Searching...'
+                  ) : (
+                    <div className="flex items-center">
+                      Ask <ChevronRight className="h-3 w-3 ml-1" />
+                    </div>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Feedback Component */}
-      <Feedback />
 
       {/* Alert Dialog for maximum queries reached */}
       <AlertDialog open={isAlertDialogOpen} onOpenChange={setIsAlertDialogOpen}>
-        <AlertDialogContent className="bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-md mx-auto">
+        <AlertDialogContent className="bg-[#1a1b1e] rounded-lg shadow-xl border border-gray-800 p-6 max-w-md mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-bold text-gray-900 mb-2">Sign in required</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 text-base">
+            <AlertDialogTitle className="text-2xl font-bold text-gray-200 mb-2">Sign in required</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400 text-base">
               You&apos;ve reached the maximum number of queries for anonymous users. Please sign in to continue asking questions and enjoy unlimited access.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1308,10 +1367,10 @@ export default function UnifiedMain() {
 
       {/* Alert Dialog for non-signed-in users trying to access history or bookmark */}
       <AlertDialog open={isSignInAlertOpen} onOpenChange={setIsSignInAlertOpen}>
-        <AlertDialogContent className="bg-white rounded-lg shadow-xl border border-gray-200 p-6 max-w-md mx-auto">
+        <AlertDialogContent className="bg-[#1a1b1e] rounded-lg shadow-xl border border-gray-800 p-6 max-w-md mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-bold text-gray-900 mb-2">Sign in required</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 text-base">
+            <AlertDialogTitle className="text-2xl font-bold text-gray-200 mb-2">Sign in required</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400 text-base">
               Please sign in to access chat history, bookmarks, and create new chats.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1329,25 +1388,25 @@ export default function UnifiedMain() {
 
       {/* Share Dialog */}
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-        <DialogContent className="sm:max-w-[450px] bg-white border-none shadow-lg rounded-lg">
+        <DialogContent className="sm:max-w-[450px] bg-[#1a1b1e] border-none shadow-lg rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
+            <DialogTitle className="text-2xl font-bold text-gray-200 flex items-center">
               <Share2 className="h-6 w-6 mr-2 text-green-500" />
               Share Chat
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-gray-400">
               Share this chat by copying the link below and sending it to others.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-6">
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-2">Shareable Link</p>
+            <div className="bg-[#2a2b2e] p-4 rounded-lg border border-gray-700">
+              <p className="text-sm font-medium text-gray-200 mb-2">Shareable Link</p>
               <div className="flex items-center">
                 <Input
                   type="text"
                   value={shareableLink}
                   readOnly
-                  className="flex-1 mr-2 text-gray-600 bg-white border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                  className="flex-1 mr-2 text-gray-300 bg-transparent border-gray-600 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                 />
                 <Button
                   variant="outline"
@@ -1368,14 +1427,14 @@ export default function UnifiedMain() {
                       }, 2000);
                     }
                   }}
-                  className="whitespace-nowrap text-gray-600 copy-link-button"
+                  className="whitespace-nowrap text-gray-300 copy-link-button"
                 >
                   <Clipboard className="h-4 w-4 mr-2" />
                   Copy Link
                 </Button>
               </div>
             </div>
-            <div className="mt-6 text-sm text-gray-500">
+            <div className="mt-6 text-sm text-gray-300">
               <p className="flex items-center mb-2">
                 <Info className="h-4 w-4 mr-2 text-green-500" />
                 This link allows others to view this chat.
@@ -1387,13 +1446,36 @@ export default function UnifiedMain() {
             </div>
           </div>
           <DialogFooter className="mt-6">
-            <Button onClick={() => setIsShareDialogOpen(false)} variant="ghost" className="mr-2 text-gray-600">
+            <Button onClick={() => setIsShareDialogOpen(false)} variant="ghost" className="mr-2 text-gray-300">
               Cancel
             </Button>
             <Button onClick={() => setIsShareDialogOpen(false)} className="bg-green-600 hover:bg-green-700 text-white">
               Done
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Memory Dialog */}
+      <Dialog open={isMemoryDialogOpen} onOpenChange={setIsMemoryDialogOpen}>
+        <DialogContent className="sm:max-w-[450px] bg-[#1a1b1e] border-none shadow-lg rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-200 flex items-center">
+              <BrainCircuit className="h-6 w-6 mr-2 text-[#106968]" />
+              AI Memory
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Set a persistent memory for the AI to remember across all conversations.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <MemoryInput
+              initialMemory={memory}
+              onSave={saveMemory}
+              maxCharacters={1000}
+              // onClose={() => setIsMemoryDialogOpen(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

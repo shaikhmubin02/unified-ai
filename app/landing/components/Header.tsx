@@ -12,8 +12,8 @@ export default function Header() {
   const { isSignedIn } = useAuth()
 
   return (
-    <header className="fixed top-0 left-0 right-0 mx-4 sm:mx-8 md:mx-12 lg:mx-24 xl:mx-32 my-3 bg-[#0e1011] bg-opacity-90 border-[0.2px] border-gray-700 rounded-full shadow-lg z-50 border-t-1 border-emerald-400">
-      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 mx-4 sm:mx-8 md:mx-12 lg:mx-24 xl:mx-32 my-2 bg-[#0e1011] bg-opacity-90 border-[0.2px] border-gray-700 rounded-full shadow-lg z-50">
+      <div className="container mx-auto px-2 py-1 flex items-center justify-between">
         <Link href="/landing">
           <div className="flex items-center space-x-2">
             <Image 
