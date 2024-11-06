@@ -59,7 +59,6 @@ export default function UnifiedMain() {
   const [chatHistories, setChatHistories] = useState<ChatHistory[]>([])
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [isHistorySidebarOpen, setIsHistorySidebarOpen] = useState(false)
-  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false) // New state for Bookmark Sidebar
   const [memory, setMemory] = useState('')
   const [isMemoryDialogOpen, setIsMemoryDialogOpen] = useState(false)
   const { isSignedIn, user, isLoaded } = useUser()
@@ -82,16 +81,19 @@ export default function UnifiedMain() {
   const [responseTime, setResponseTime] = useState<number | null>(null)
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
   const [isLoadingHistories, setIsLoadingHistories] = useState(true)
+  const [isBookmarkDialogOpen, setIsBookmarkDialogOpen] = useState(false)
 
   useEffect(() => {
     if (isLoaded) {
       if (isSignedIn) {
-        // Fetch chat histories from API
         const fetchChatHistories = async () => {
           setIsLoadingHistories(true)
           try {
             const response = await axios.get('/api/chats')
-            setChatHistories(response.data)
+            const sortedChats = response.data.sort((a: ChatHistory, b: ChatHistory) => 
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            )
+            setChatHistories(sortedChats)
           } catch (error) {
             console.error('Error fetching chat histories:', error)
           } finally {
@@ -136,8 +138,7 @@ export default function UnifiedMain() {
     setMemory('')
     setAnonymousQueriesCount(0)
     setIsSearchDisabled(false)
-    setIsHistorySidebarOpen(false)
-    setIsBookmarkSidebarOpen(false) // Close bookmark sidebar
+    // setIsHistorySidebarOpen(false)
   }
 
   const createNewChat = async () => {
@@ -318,9 +319,9 @@ export default function UnifiedMain() {
       if (selectedChat) {
         setCurrentChatId(chatId);
         setMessages(selectedChat.messages);
-        // Update the chat in the local state
+        // Update the chat in the local state while preserving order
         setChatHistories(prev => prev.map(chat => 
-          chat._id === chatId ? selectedChat : chat
+          chat._id === chatId ? { ...chat, messages: selectedChat.messages } : chat
         ));
       }
     } catch (error) {
@@ -337,14 +338,15 @@ export default function UnifiedMain() {
   const toggleHistorySidebar = () => {
     setIsHistorySidebarOpen(!isHistorySidebarOpen)
     if (!isHistorySidebarOpen) {
-      setIsBookmarkSidebarOpen(false) // Close bookmark sidebar when opening history sidebar
+      setIsBookmarkDialogOpen(false) // Close bookmark dialog when opening history sidebar
     }
   }
 
-  const toggleBookmarkSidebar = () => {
-    setIsBookmarkSidebarOpen(!isBookmarkSidebarOpen)
-    if (!isBookmarkSidebarOpen) {
-      setIsHistorySidebarOpen(false) // Close history sidebar when opening bookmark sidebar
+  const handleBookmarkClick = () => {
+    if (isSignedIn) {
+      setIsBookmarkDialogOpen(true)
+    } else {
+      setIsSignInAlertOpen(true)
     }
   }
 
@@ -415,14 +417,6 @@ export default function UnifiedMain() {
     }
   }
 
-  const handleBookmarkClick = () => {
-    if (isSignedIn) {
-      toggleBookmarkSidebar()
-    } else {
-      setIsSignInAlertOpen(true)
-    }
-  }
-
   const handleReRun = (index: number) => {
     const messageToReRun = messages[index];
     console.log('Message to re-run:', messageToReRun);
@@ -439,12 +433,17 @@ export default function UnifiedMain() {
 
   const handleBookmark = async (chat: ChatHistory) => {
     try {
-      const response = await axios.put(`/api/chats/${chat._id}`, {
+      await axios.put(`/api/chats/${chat._id}`, {
         isBookmarked: !chat.isBookmarked
       })
+      
+      // Only update the bookmark status, maintain current order
       setChatHistories(prev => prev.map(c => 
-        c._id === chat._id ? { ...c, isBookmarked: response.data.isBookmarked } : c
+        c._id === chat._id 
+          ? { ...c, isBookmarked: !c.isBookmarked }
+          : c
       ))
+      
       toast({
         title: chat.isBookmarked ? 'Removed Bookmark' : 'Bookmarked',
         description: chat.isBookmarked ? 'Chat has been removed from bookmarks.' : 'Chat has been added to bookmarks.',
@@ -657,8 +656,8 @@ export default function UnifiedMain() {
                     <Loader />
                   </div>
                 ) : (
-                  chatHistories.map(chat => (
-                    <div key={chat._id} className="flex items-center group">
+                  chatHistories.map((chat, originalIndex) => (
+                    <div key={`${chat._id}-${originalIndex}`} className="flex items-center group">
                       <Button
                         variant={chat._id === currentChatId ? "secondary" : "ghost"}
                         className={`flex-grow justify-start text-left truncate text-xs font-thin max-w-[76%] min-h-0 h-7 ${
@@ -735,21 +734,23 @@ export default function UnifiedMain() {
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
-                  onClick={handleBookmarkClick}
-                >
-                  <Bookmark className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-400">Bookmarks</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
-                <p>Bookmarks</p>
-              </TooltipContent>
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+                    onClick={handleBookmarkClick}
+                  >
+                    <Bookmark className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-400">Bookmarks</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
+                  <p>Bookmarks</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             {/* <Tooltip>
               <TooltipTrigger asChild>
@@ -802,7 +803,7 @@ export default function UnifiedMain() {
       </div>
 
       {/* History Sidebar - Only show for signed-in users */}
-      {isSignedIn && (
+      {/* {isSignedIn && (
         <div className={`w-56 lg:ml-12 bg-[#1a1b1e] border-r border-gray-800 fixed h-full transition-transform duration-300 ease-in-out ${isHistorySidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
           <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
             <p className="text-gray-300 font-serif font-normal">Previous Chats</p>
@@ -892,108 +893,115 @@ export default function UnifiedMain() {
             </div>
           </nav>
         </div>
-      )}
+      )} */}
 
-      {/* Bookmark Sidebar - Only show for signed-in users */}
-      {isSignedIn && (
-        <div className={`w-56 lg:ml-12 bg-[#1a1b1e] border-r border-gray-800 fixed h-full transition-transform duration-300 ease-in-out ${isBookmarkSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-10 flex flex-col`}>
-          <div className="p-3 border-b border-gray-200 flex justify-between items-center mt-14">
-            <p className="text-gray-300 font-serif font-normal">Bookmarked Chats</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleBookmarkSidebar}
-              className="h-6 w-6"
-            >
-              <ChevronLeft className="h-4 w-4 text-gray-600" />
-            </Button>
-          </div>
-          <nav className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+      {/* Bookmarks Dialog */}
+      <Dialog open={isBookmarkDialogOpen} onOpenChange={setIsBookmarkDialogOpen}>
+        <DialogContent className="sm:max-w-[450px] bg-[#1a1b1e] border-none shadow-lg rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-200 flex items-center">
+              <BookmarkCheck className="h-6 w-6 mr-2 text-[#106968]" />
+              Bookmarked Chats
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Access your saved conversations quickly.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="mt-6 max-h-[60vh] pr-4 overflow-y-auto">
             <div className="space-y-2">
-              {chatHistories.filter(chat => chat.isBookmarked).map(chat => (
-                <div key={chat._id} className="flex items-center space-x-2">
-                  {editingTitleId === chat._id ? (
-                    <div className="flex-grow flex items-center">
-                      <Input
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
-                        className="mr-2 text-sm text-gray-800"
-                        onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle(chat._id)}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleSaveTitle(chat._id)}
-                        className="h-8 w-8"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <Button
-                        variant={chat._id === currentChatId ? "secondary" : "ghost"}
-                        className={`flex-grow justify-start text-left truncate text-sm font-thin ${
-                          chat._id === currentChatId ? 'text-gray-800 font-medium' : 'text-gray-800'
-                        }`}
-                        onClick={() => selectChat(chat._id)}
-                      >
-                        {chat.title}
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 opacity-40 group-hover:opacity-100 rounded-full hover:bg-[#3d3f3f] transition-all"
-                          >
-                            <MoreVertical className="h-3 w-3 text-gray-300" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className='font-mono'>
-                          <DropdownMenuItem onClick={() => handleEditTitle(chat._id, chat.title)}>
-                            <Edit2 className='h-4 w-4 ml-1 mr-2' />
-                            Rename
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleBookmark(chat)} className="text-gray-600">
-                            {chat.isBookmarked ? (
-                              <>
-                                <BookmarkCheck className='h-4 w-4 ml-1 mr-2' />
-                                Remove Bookmark
-                              </>
-                            ) : (
-                              <>
-                                <Bookmark className='h-4 w-4 ml-1 mr-2' />
-                                Bookmark
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShareChat(chat)}>
-                            <Share2 className='h-4 w-4 ml-1 mr-2' />
-                            Share
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => deleteChat(chat._id)} className="text-red-600">
-                            <Trash2 className='h-4 w-4 ml-1 mr-2' />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </>
-                  )}
-                </div>
-              ))}
+              {chatHistories
+                .filter(chat => chat.isBookmarked)
+                .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+                .map((chat) => (
+                  <div key={chat._id} className="flex items-center space-x-2 mb-2 group">
+                    <Button
+                      variant="ghost"
+                      className="flex-grow justify-start text-left truncate text-sm font-thin text-gray-300 hover:text-white hover:bg-[#2d2f2f]"
+                      onClick={() => {
+                        selectChat(chat._id)
+                        setIsBookmarkDialogOpen(false)
+                      }}
+                    >
+                      {chat.title}
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 rounded-full hover:bg-[#3d3f3f]"
+                        >
+                          <MoreVertical className="h-3 w-3 text-gray-300" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="font-mono">
+                        <DropdownMenuItem onClick={() => handleEditTitle(chat._id, chat.title)}>
+                          <Edit2 className="h-4 w-4 ml-1 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBookmark(chat)}>
+                          <BookmarkCheck className="h-4 w-4 ml-1 mr-2" />
+                          Remove Bookmark
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleShareChat(chat)}>
+                          <Share2 className="h-4 w-4 ml-1 mr-2" />
+                          Share
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => deleteChat(chat._id)} className="text-red-600">
+                          <Trash2 className="h-4 w-4 ml-1 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
               {chatHistories.filter(chat => chat.isBookmarked).length === 0 && (
-                <p className="text-gray-500 text-sm text-center mt-4">No bookmarks yet.</p>
+                <div className="text-center py-8">
+                  <Bookmark className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-400">No bookmarks yet.</p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Bookmark your favorite conversations to find them quickly.
+                  </p>
+                </div>
               )}
             </div>
-          </nav>
-        </div>
-      )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden md:ml-12">
         {/* Remove the header section and add Feedback button in top-right */}
         <div className="fixed top-3 right-4 z-20 flex items-center space-x-2">
+          {currentChatId && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-300 hover:text-white hover:bg-[#2d2f2f]"
+                    onClick={() => {
+                      const currentChat = chatHistories.find(chat => chat._id === currentChatId);
+                      if (currentChat) {
+                        handleBookmark(currentChat);
+                      }
+                    }}
+                  >
+                    {chatHistories.find(chat => chat._id === currentChatId)?.isBookmarked ? (
+                      <BookmarkCheck className="h-4 w-4" />
+                    ) : (
+                      <Bookmark className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="font-mono text-sm font-thin">
+                  {chatHistories.find(chat => chat._id === currentChatId)?.isBookmarked ? 
+                    'Remove bookmark' : 'Bookmark chat'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <SignedOut>
             <SignInButton mode="modal">
               <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-[#2d2f2f]">
@@ -1011,7 +1019,7 @@ export default function UnifiedMain() {
         {/* Content Area - adjust top padding since header is removed */}
         <main className="flex-1 overflow-y-auto p-2 pb-16 pt-4 md:ml-48">
           <div className="max-w-3xl mx-auto h-full flex flex-col">
-            <Card className="flex flex-col mb-6 bg-transparent border-none shadow-none">
+            <Card className="flex flex-col mb-6 bg-transparent border-none shadow-none mr-12">
               <CardContent className="p-3 flex flex-col">
                 <ScrollArea className="w-full">
                   <div className="pt-4 pb-16">
@@ -1025,7 +1033,7 @@ export default function UnifiedMain() {
                           ref={message.role === 'assistant' && index === messages.length - 1 ? latestAnswerRef : null}
                         >
                           {message.role === 'assistant' ? (
-                            <div className="flex items-start space-x-2 relative">
+                            <div className="flex items-start space-x-2 relative group">
                               {/* AI Profile Picture */}
                               <div className="flex-shrink-0 w-5 h-5 mt-0.5">
                                 <Image src="/logo.png" alt="Unified AI" width={20} height={20} className="animate-logo-spin-8 origin-center"/>
@@ -1039,7 +1047,11 @@ export default function UnifiedMain() {
                                   <div className="loader">...</div>
                                 )}
                                 {/* Buttons container */}
-                                <div className="absolute bottom-0 left-0 flex space-x-2">
+                                <div className={`absolute bottom-0 left-0 flex space-x-2 ${
+                                  index === messages.length - 1 
+                                    ? 'opacity-100' 
+                                    : 'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
+                                }`}>
                                   {/* Copy Button */}
                                   <Button
                                     variant="ghost"
@@ -1066,7 +1078,7 @@ export default function UnifiedMain() {
                                     aria-label="Copy message"
                                     id={`copy-button-${index}`}
                                   >
-                                    <Clipboard className="h-4 w-4 text-gray-400" />
+                                    <Clipboard className="h-4 w-4 text-gray-500" />
                                   </Button>
 
                                   {/* Re-run Button */}
@@ -1078,7 +1090,7 @@ export default function UnifiedMain() {
                                       handleReRun(index);
                                     }}
                                   >
-                                    <Repeat className="h-4 w-4 text-gray-400" />
+                                    <Repeat className="h-4 w-4 text-gray-500" />
                                   </Button>
 
                                   {/* Model Selection Button */}
@@ -1086,7 +1098,7 @@ export default function UnifiedMain() {
                                     <SelectTrigger className="h-5 w-5 p-0 border-none [&>svg]:hidden shadow-none">
                                       <SelectValue>
                                         <Button variant="ghost" size="icon" className="h-5 w-5 p-0 hover:bg-[#2d2f2f]">
-                                          <Package className="h-4 w-4 mt-2 text-gray-400" />
+                                          <Package className="h-4 w-4 mt-2 text-gray-500" />
                                         </Button>
                                       </SelectValue>
                                     </SelectTrigger>
@@ -1098,7 +1110,7 @@ export default function UnifiedMain() {
                                   </Select>
 
                                   {/* Response Time Button (Response time:) */}
-                                  {responseTime !== null && (
+                                  {responseTime !== null && index === messages.length - 1 && (
                                     <div className="relative flex items-center">
                                       <Button
                                         variant="ghost"
@@ -1108,14 +1120,14 @@ export default function UnifiedMain() {
                                         onMouseLeave={() => setExpandedResponseTime(null)}
                                         onClick={() => setExpandedResponseTime(expandedResponseTime === responseTime ? null : responseTime)}
                                       >
-                                        <Clock className="h-4 w-4 text-gray-400" />
+                                        <Clock className="h-4 w-4 text-gray-500" />
                                       </Button>
                                       <div 
                                         className={`absolute left-full ml-1 transition-all duration-300 ease-in-out overflow-hidden ${
                                           expandedResponseTime === responseTime ? 'w-40 opacity-100' : 'w-0 opacity-0'
                                         }`}
                                       >
-                                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                                        <span className="text-xs text-gray-500 whitespace-nowrap">
                                           {responseTime}ms
                                         </span>
                                       </div>
