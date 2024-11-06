@@ -970,7 +970,7 @@ export default function UnifiedMain() {
       </Dialog>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden md:ml-12">
+      <div className="flex-1 flex flex-col h-full overflow-hidden md:pl-56">
         {/* Remove the header section and add Feedback button in top-right */}
         <div className="fixed top-3 right-4 z-20 flex items-center space-x-2">
           {currentChatId && (
@@ -1016,8 +1016,8 @@ export default function UnifiedMain() {
           <Feedback />
         </div>
 
-        {/* Content Area - adjust top padding since header is removed */}
-        <main className="flex-1 overflow-y-auto p-2 pb-16 pt-4 md:ml-48">
+        {/* Content Area - adjust padding and width */}
+        <main className="flex-1 overflow-y-auto p-2 pb-16 pt-4 w-full max-w-[calc(100vw-224px)] mx-auto">
           <div className="max-w-3xl mx-auto h-full flex flex-col">
             <Card className="flex flex-col mb-6 bg-transparent border-none shadow-none mr-12">
               <CardContent className="p-3 flex flex-col">
@@ -1170,14 +1170,14 @@ export default function UnifiedMain() {
                     ) : (
                       <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center">
                         {/* Container for both input and focus button */}
-                        <div className="relative mb-8 w-full max-w-2xl mr-40">
+                        <div className="relative mb-8 w-full max-w-2xl mr-36">
                           {/* New Search Input Component */}
                           <div className="w-full mt-28">
                             <TypingAnimation
                               className="text-gray-300 text-xl font-mono mb-4"
                               text="Which AI genius should we wake up today?☕️"
                             />
-                            <div className="flex flex-col gap-2 p-2 rounded-md border border-gray-700 bg-[#202222]">
+                            <div className="flex flex-col gap-2 p-2 rounded-md border border-gray-700 bg-[#202222] mr-6">
                               <Input
                                 className="bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder-gray-400"
                                 placeholder="Ask anything..."
@@ -1213,7 +1213,7 @@ export default function UnifiedMain() {
                         </div>
 
                         {/* Rest of the marquee content */}
-                        <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3">
+                        <div className="w-full max-w-4xl overflow-hidden space-y-2 mb-3 -mr-6">
                           {/* Random Questions Marquee */}
                           <div className="relative">
                             <Marquee 
@@ -1321,9 +1321,9 @@ export default function UnifiedMain() {
           </div>
         </main>
 
-        {/* Bottom Search Bar */}
+        {/* Bottom Search Bar - adjust positioning */}
         {messages.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-[#0e1011] to-transparent md:ml-56">
+          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-[#0e1011] to-transparent md:pl-56">
             <div className="max-w-3xl mx-auto w-full flex justify-center">
               <div className="relative w-full max-w-2xl">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
