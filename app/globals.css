@@ -90,30 +90,14 @@ body {
     --color-4: 195 100% 63%;
     --color-5: 90 100% 63%;
   }
-  html,
-  body {
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-  }
 }
 
 @layer base {
   * {
     @apply border-border;
-    box-sizing: border-box;
   }
-  
   body {
     @apply bg-background text-foreground;
-  }
-  
-  #__next {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
   }
 }
 
@@ -150,29 +134,4 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #2d2f2f transparent;
-}
-
-@layer utilities {
-  .main-content {
-    width: 100%;
-    max-width: 100vw;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  
-  .sidebar-width {
-    width: 14rem; /* 224px */
-  }
-  
-  .content-with-sidebar {
-    width: calc(100% - 14rem);
-    max-width: calc(100vw - 14rem);
-  }
-  
-  @media (max-width: 768px) {
-    .content-with-sidebar {
-      width: 100%;
-      max-width: 100vw;
-    }
-  }
 }

@@ -528,7 +528,7 @@ export default function UnifiedMain() {
   }, [isShareDialogOpen]);
 
   return (
-    <div className="flex h-screen bg-[#191a1a] main-content">
+    <div className="flex h-screen bg-[#191a1a]">
       {/* Mobile Sidebar */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetTrigger asChild>
@@ -606,7 +606,7 @@ export default function UnifiedMain() {
       </Sheet>
 
       {/* Main Sidebar (hidden on mobile) */}
-      <div className="sidebar-width bg-[#202222] border-r border-gray-800 p-2 hidden md:flex flex-col items-start shadow-sm fixed h-full z-20">
+      <div className="w-56 bg-[#202222] border-r border-gray-800 p-2 hidden md:flex flex-col items-start shadow-sm fixed h-full z-20">
         {/* Top section with logo and new chat */}
         <div className="flex flex-col items-start space-y-4 w-full">
           <div className="flex-2 flex items-start justify-start space-x-2 mt-1 w-full ml-2">
@@ -970,7 +970,7 @@ export default function UnifiedMain() {
       </Dialog>
 
       {/* Main Content */}
-      <div className="content-with-sidebar flex flex-col h-full overflow-hidden md:ml-56">
+      <div className="flex-1 flex flex-col h-full overflow-hidden md:pl-56">
         {/* Remove the header section and add Feedback button in top-right */}
         <div className="fixed top-3 right-4 z-20 flex items-center space-x-2">
           {currentChatId && (
