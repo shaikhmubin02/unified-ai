@@ -157,6 +157,30 @@ const config: Config = {
   			'xl': '1280px',
   			'2xl': '1536px',
   		},
+  		spacing: {
+  			'18': '4.5rem',    // 72px
+  			'34': '8.5rem',    // 136px
+  			'36': '9rem',      // 144px
+  			'72': '18rem',     // 288px
+  			'80': '20rem',     // 320px
+  			'96': '24rem',     // 384px
+  		},
+  		margin: {
+  			'18': '4.5rem',
+  			'34': '8.5rem',
+  			'36': '9rem',
+  			'72': '18rem',
+  			'80': '20rem',
+  			'96': '24rem',
+  		},
+  		padding: {
+  			'18': '4.5rem',
+  			'34': '8.5rem',
+  			'36': '9rem',
+  			'72': '18rem',
+  			'80': '20rem',
+  			'96': '24rem',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

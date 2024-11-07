@@ -24,6 +24,20 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Responsive margins */
+  .mr-responsive {
+    margin-right: clamp(1rem, 5vw, 9rem);
+  }
+  
+  .ml-responsive {
+    margin-left: clamp(0.5rem, 2vw, 2rem);
+  }
+  
+  .mx-responsive {
+    margin-left: clamp(1rem, 3vw, 4rem);
+    margin-right: clamp(1rem, 3vw, 4rem);
+  }
 }
 
 @layer base {
@@ -144,4 +158,25 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #2d2f2f transparent;
+}
+
+@layer components {
+  .container-responsive {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    margin-left: auto;
+    margin-right: auto;
+    
+    @screen sm {
+      max-width: calc(100vw - 4rem);
+    }
+    
+    @screen md {
+      max-width: calc(100vw - 6rem);
+    }
+    
+    @screen lg {
+      max-width: calc(100vw - 8rem);
+    }
+  }
 }

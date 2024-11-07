@@ -536,7 +536,13 @@ export default function UnifiedMain() {
   }, [isSignedIn]) // Focus when isSignedIn changes
 
   return (
-    <div className="flex h-screen bg-[#191a1a]">
+    <div 
+      className="flex h-screen bg-[#191a1a]"
+      style={{
+        '--sidebar-width': 'clamp(240px, 20vw, 320px)',
+        '--content-margin': 'clamp(1rem, 5vw, 9rem)'
+      } as React.CSSProperties}
+    >
       {/* Mobile Sidebar */}
       <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
         <SheetTrigger asChild>
@@ -617,9 +623,9 @@ export default function UnifiedMain() {
       <div className="w-56 bg-[#202222] border-r border-gray-800 p-2 hidden md:flex flex-col items-start shadow-sm fixed h-full z-20">
         {/* Top section with logo and new chat */}
         <div className="flex flex-col items-start space-y-4 w-full">
-          <div className="flex-2 flex items-start justify-start space-x-2 mt-1 w-full ml-2">
+          <div className="flex-2 flex items-start justify-start space-x-2 mt-0.25rem ml-0.5rem">
             <Image src="/logo.png" alt="Unified AI" width={30} height={30} /> 
-            <p className="text-gray-300 font-serif font-normal mt-1 mb-3">Unified AI</p>
+            <p className="text-gray-300 font-serif font-normal mt-0.25rem mb-0.75rem">Unified AI</p>
           </div>
           {/* <div className="w-full h-px bg-gray-200 mb-2"></div> */}
           <TooltipProvider>
@@ -1347,7 +1353,7 @@ export default function UnifiedMain() {
                     ) : (
                       <div className="text-center text-gray-500 h-full flex flex-col items-center justify-center">
                         {/* Container for both input and focus button */}
-                        <div className="relative mb-8 w-full max-w-2xl mr-36">
+                        <div className="relative mb-8 w-full max-w-2xl mr-9rem">
                           {/* New Search Input Component */}
                           <div className="w-full mt-28">
                             <TypingAnimation
@@ -1645,7 +1651,7 @@ export default function UnifiedMain() {
                         </div>
 
                         {/* Footer */}
-                        <footer className={`fixed bottom-0 border-none bg-none px-6 py-4 mr-36`}>
+                        <footer className={`fixed bottom-0 border-none bg-none px-1.5rem py-1rem mr-9rem`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                               <Link href="#" className="hover:text-white">
