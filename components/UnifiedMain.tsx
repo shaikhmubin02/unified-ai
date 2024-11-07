@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock, BookmarkCheck, Plus, ListFilter, ArrowRight, BrainCircuit, HelpCircle, ChevronUp } from 'lucide-react'
+import { Search, Sparkles, History, Bookmark, Brain, Settings, ChevronDown ,ChevronRight, ChevronLeft, PlusCircle, Trash2, User, Edit2, TrendingUp, Pencil, MoreVertical, Check, Share2, Clipboard, Info, Lock, Menu, Home, FileText, DollarSign, BookOpen, CircleEllipsis, CircleEllipsisIcon, Package, Repeat, RectangleEllipsis, SquareChevronRight, Clock, BookmarkCheck, Plus, ListFilter, ArrowRight, BrainCircuit, HelpCircle, ChevronUp, Box } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import axios from 'axios'
@@ -82,6 +82,7 @@ export default function UnifiedMain() {
   const [expandedResponseTime, setExpandedResponseTime] = useState<number | null>(null)
   const [isLoadingHistories, setIsLoadingHistories] = useState(true)
   const [isBookmarkDialogOpen, setIsBookmarkDialogOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null) // Add this line
 
   useEffect(() => {
     if (isLoaded) {
@@ -527,6 +528,13 @@ export default function UnifiedMain() {
     }
   }, [isShareDialogOpen]);
 
+  // useEffect to handle auto-focus
+  useEffect(() => {
+    if (isSignedIn && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isSignedIn]) // Focus when isSignedIn changes
+
   return (
     <div className="flex h-screen bg-[#191a1a]">
       {/* Mobile Sidebar */}
@@ -733,72 +741,72 @@ export default function UnifiedMain() {
                 <p>Memory</p>
               </TooltipContent>
             </Tooltip>
+          </TooltipProvider>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
-                    onClick={handleBookmarkClick}
-                  >
-                    <Bookmark className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-400">Bookmarks</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
-                  <p>Bookmarks</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {/* <Tooltip>
+          <TooltipProvider>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
                   variant="ghost" 
                   className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+                  onClick={handleBookmarkClick}
                 >
-                  <TrendingUp className="h-4 w-4 text-gray-300" />
-                  <span className="text-gray-300">Trending</span>
+                  <Bookmark className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-400">Bookmarks</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
-                <p>Trending Topics</p>
+                <p>Bookmarks</p>
               </TooltipContent>
-            </Tooltip> */}
+            </Tooltip>
           </TooltipProvider>
 
-          {/* User Section */}
-          <div className="pt-2 border-t border-gray-700 ml-1">
-            {/* {isSignedIn ? (
-              <div className="flex items-center space-x-2">
-                <UserButton />
-                <p className="text-gray-300 text-sm">
-                  {user?.fullName || user?.firstName}
-                </p>
-              </ div>
-            ) : (
-              <SignInButton mode="modal">
-                <Button variant="ghost" className="w-full justify-start space-x-2">
-                  <User className="h-4 w-4" />
-                  <span>Sign In</span>
-                </Button>
-              </SignInButton>
-            )} */}
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start space-x-2 text-gray-300 hover:text-white hover:bg-[#2d2f2f]"
-              onClick={() => router.push('/landing/pricing')}
-            >
-              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-700 -ml-3">
-                <Package className="h-5 w-5 text-gray-400 animate-logo-spin-8 origin-center" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-start text-gray-300">Upgrade plan</span>
-                <span className="text-[10px] text-start text-gray-400">Access a range of top models</span>
-              </div>
-            </Button>
-          </div>
+          {/* <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start space-x-2 hover:text-white hover:bg-[#2d2f2f]"
+              >
+                <TrendingUp className="h-4 w-4 text-gray-300" />
+                <span className="text-gray-300">Trending</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className='font-mono text-sm font-thin text-gray-300 bg-[#2a2b2e] border-1 shadow-md mb-4'>
+              <p>Trending Topics</p>
+            </TooltipContent>
+          </Tooltip> */}
+        </div>
+
+        {/* User Section */}
+        <div className="pt-2 border-t border-gray-700 ml-1">
+          {/* {isSignedIn ? (
+            <div className="flex items-center space-x-2">
+              <UserButton />
+              <p className="text-gray-300 text-sm">
+                {user?.fullName || user?.firstName}
+              </p>
+            </ div>
+          ) : (
+            <SignInButton mode="modal">
+              <Button variant="ghost" className="w-full justify-start space-x-2">
+                <User className="h-4 w-4" />
+                <span>Sign In</span>
+              </Button>
+            </SignInButton>
+          )} */}
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start space-x-2 text-gray-300 hover:text-white hover:bg-[#2d2f2f]"
+            onClick={() => router.push('/landing/pricing')}
+          >
+            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-700 -ml-3">
+              <Package className="h-5 w-5 text-gray-400 animate-logo-spin-8 origin-center" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-start text-gray-300">Upgrade plan</span>
+              <span className="text-[10px] text-start text-gray-400">Access a range of top models</span>
+            </div>
+          </Button>
         </div>
       </div>
 
@@ -1102,10 +1110,176 @@ export default function UnifiedMain() {
                                         </Button>
                                       </SelectValue>
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem className="text-muted-foreground" value="llama3-8b-8192">Meta Llama </SelectItem>
-                                      <SelectItem className="text-muted-foreground" value="gemma-7b-it">Google Gemma</SelectItem>
-                                      <SelectItem className="text-muted-foreground" value="llama-3.2-90b-text-preview">Meta Llama 3.2</SelectItem>
+                                    
+                                    <SelectContent className="bg-[#1a1b1e] border border-gray-800 shadow-lg">
+                                      {/* OpenAI Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin" 
+                                        value="header-openai" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/openai.png" 
+                                            alt="OpenAI" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>OpenAI Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="o1-preview">o1-preview</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="o1-mini">o1-mini</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gpt4o">GPT-4o</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gpt4-mini">GPT-4o Mini</SelectItem>
+
+                                      {/* Anthropic Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-anthropic" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/anthropic.png" 
+                                            alt="Anthropic" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Anthropic Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-sonnet-20240620">Claude 3.5 Sonnet 20241022</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-sonnet">Claude 3.5 Sonnet</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-haiku">Claude 3.5 Haiku</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude3-opus">Claude 3 Opus</SelectItem>
+
+                                      {/* Google Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-google" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/gemini-logo.png" 
+                                            alt="Google" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Google Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gemini15-pro">Gemini 1.5 Pro</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gemini15-flash">Gemini 1.5 Flash</SelectItem>
+
+                                      {/* Meta Models */}
+                                      <SelectItem 
+                                        className="font-thin mt-2" 
+                                        value="header-meta" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/meta.png" 
+                                            alt="Meta" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Meta Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="llama3-8b-8192">Llama 3.1</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="llama-3.2-90b-text-preview">Llama 3.2</SelectItem>
+                                       
+                                      {/* Mistral Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/mistral.png" 
+                                            alt="Mistral" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Mistral Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="ministarl3b">Ministral 3B</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="ministarl8b">Ministral 8B</SelectItem>
+                                    
+                                      {/* DeepSeek Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/deepseek.png" 
+                                            alt="DeepSeek" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>DeepSeek Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="deepseek-v2.5">DeepSeek-V2.5</SelectItem>
+
+                                      {/* Text to Image Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <div className="w-4 h-4 bg-white rounded-sm flex items-center justify-center">
+                                            <Box className="w-3 h-3 text-black" />
+                                          </div>
+                                          <span className='text-gray-300'>Text to Image</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="dalle-3">
+                                      <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/chatgpt.jpg" 
+                                            alt="DALL·E" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>DALL·E 3</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="stable-diffusion-3.5">
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/stability.jpg" 
+                                            alt="Stable Diffusion" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Stable Diffusion 3.5</span>
+                                        </div>
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
 
@@ -1143,9 +1317,12 @@ export default function UnifiedMain() {
                                 {editingMessageId === index ? (
                                   <div className="flex items-center">
                                     <Input
+                                      ref={inputRef}
+                                      className="bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder-gray-400"
+                                      placeholder="Edit message..."
                                       value={editedMessage}
                                       onChange={(e) => setEditedMessage(e.target.value)}
-                                      className="mr-2"
+                                      onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(index)}
                                     />
                                     <Button onClick={() => handleSaveEdit(index)} size="sm">Save</Button>
                                   </div>
@@ -1179,7 +1356,8 @@ export default function UnifiedMain() {
                             />
                             <div className="flex flex-col gap-2 p-2 rounded-md border border-gray-700 bg-[#202222] mr-6">
                               <Input
-                                className="bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder-gray-400"
+                                ref={inputRef}
+                                className="bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder-gray-400 caret-[#106968]"
                                 placeholder="Ask anything..."
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
@@ -1187,13 +1365,192 @@ export default function UnifiedMain() {
                               />
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white hover:bg-transparent">
-                                    <ListFilter className="h-4 w-4" />
-                                    <span className="sr-only">Focus</span>
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white hover:bg-transparent">
+                                  
+                                  {/* Model Selection Button */}
+                                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                                    <SelectTrigger className="h-5 flex items-center gap-2 px-2 border-none [&>svg]:hidden shadow-none hover:bg-[#2d2f2f] group">
+                                      <SelectValue>
+                                        <div className="flex items-center gap-2 text-gray-400 group-hover:text-white">
+                                          <Package className="h-4 w-4 group-hover:text-white"/>
+                                          <span className='text-sm'>Models</span>
+                                        </div>
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-[#1a1b1e] border border-gray-800 shadow-lg">
+                                      {/* OpenAI Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin" 
+                                        value="header-openai" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/openai.png" 
+                                            alt="OpenAI" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>OpenAI Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="o1-preview">o1-preview</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="o1-mini">o1-mini</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gpt4o">GPT-4o</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gpt4-mini">GPT-4o Mini</SelectItem>
+
+                                      {/* Anthropic Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-anthropic" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/anthropic.png" 
+                                            alt="Anthropic" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Anthropic Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-sonnet-20240620">Claude 3.5 Sonnet 20241022</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-sonnet">Claude 3.5 Sonnet</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude35-haiku">Claude 3.5 Haiku</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="claude3-opus">Claude 3 Opus</SelectItem>
+
+                                      {/* Google Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-google" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/gemini-logo.png" 
+                                            alt="Google" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Google Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gemini15-pro">Gemini 1.5 Pro</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="gemini15-flash">Gemini 1.5 Flash</SelectItem>
+
+                                      {/* Meta Models */}
+                                      <SelectItem 
+                                        className="font-thin mt-2" 
+                                        value="header-meta" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/meta.png" 
+                                            alt="Meta" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Meta Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="llama31-70b">Llama 3.1 70B</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="llama31-405b">Llama 3.1 405B</SelectItem>
+                                       
+                                      {/* Mistral Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/mistral.png" 
+                                            alt="Mistral" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Mistral Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="ministarl3b">Ministral 3B</SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="ministarl8b">Ministral 8B</SelectItem>
+                                    
+                                      {/* DeepSeek Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/deepseek.png" 
+                                            alt="DeepSeek" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>DeepSeek Models</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="deepseek-v2.5">DeepSeek-V2.5</SelectItem>
+
+                                      {/* Text to Image Models */}
+                                      <SelectItem 
+                                        className="text-gray-300 font-thin mt-2" 
+                                        value="header-other" 
+                                        disabled
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <div className="w-4 h-4 bg-white rounded-sm flex items-center justify-center">
+                                            <Box className="w-3 h-3 text-black" />
+                                          </div>
+                                          <span className='text-gray-300'>Text to Image</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="dalle-3">
+                                      <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/chatgpt.jpg" 
+                                            alt="DALL·E" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>DALL·E 3</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem className="text-gray-300 pl-4 focus:bg-[#2d2f2f] focus:text-white hover:bg-[#2d2f2f] hover:text-white" value="stable-diffusion-3.5">
+                                        <div className="flex items-center space-x-2">
+                                          <Image 
+                                            src="/stability.jpg" 
+                                            alt="Stable Diffusion" 
+                                            width={16} 
+                                            height={16} 
+                                            className="rounded-sm bg-white" 
+                                            unoptimized
+                                          />
+                                          <span className='text-gray-300'>Stable Diffusion 3.5</span>
+                                        </div>
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  
+                                  <Button variant="ghost" className="h-5 flex items-center gap-2 px-2 text-gray-400 hover:text-white hover:bg-[#2d2f2f]">
                                     <Plus className="h-4 w-4" />
-                                    <span className="sr-only">Attach</span>
+                                    <span>Attach</span>
                                   </Button>
                                 </div>
                                 <div className="flex items-center gap-2">  
@@ -1326,14 +1683,15 @@ export default function UnifiedMain() {
           <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-[#0e1011] to-transparent md:pl-56">
             <div className="max-w-3xl mx-auto w-full flex justify-center">
               <div className="relative w-full max-w-2xl">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <PlusCircle className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input
+                  ref={inputRef}
                   type="text"
                   placeholder={isSearchDisabled ? "Sign in to ask more questions" : "Ask anything..."}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !isSearchDisabled && handleSearch()}
-                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-700 text-gray-300 bg-[#1a1b1e] shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`pl-12 pr-20 py-3 text-sm rounded-full border-2 border-gray-700 text-gray-300 caret-[#106968] bg-[#1a1b1e] shadow-lg w-full ${isSearchDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={isSearchDisabled}
                 />
                 <Button 
