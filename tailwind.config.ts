@@ -145,7 +145,18 @@ const config: Config = {
   				'60%': { transform: 'rotate(360deg)' },
   				'100%': { transform: 'rotate(360deg)' }
   			},
-  		}
+  		},
+  		fontSize: {
+  			base: '1rem',
+  		},
+  		screens: {
+  			'xs': '375px',
+  			'sm': '640px',
+  			'md': '768px',
+  			'lg': '1024px',
+  			'xl': '1280px',
+  			'2xl': '1536px',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

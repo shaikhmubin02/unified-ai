@@ -25,6 +25,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Unified AI",
   description: "Access ChatGPT, Claude, Google's Gemini, and more - all in one place",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
 };
 
 export default function RootLayout({
