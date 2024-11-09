@@ -33,10 +33,10 @@ export function Feedback() {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full bg-[#1a1b1e] border-gray-800 shadow-md hover:bg-[#2a2b2e]"
+                className="rounded-full bg-[#2a2b2e] border-gray-800 shadow-md hover:bg-[#2a2b2e] p-1.5 h-8 w-8"
                 onClick={() => setIsFeedbackDialogOpen(true)}
               >
-                <QuestionMarkIcon className="h-4 w-4 text-gray-300" />
+                <QuestionMarkIcon className="h-4 w-4 text-gray-300 hover:text-[#1f8b81]" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="left" className="font-mono text-sm font-thin text-gray-300 bg-[#1a1b1e] border-gray-800 shadow-md">
