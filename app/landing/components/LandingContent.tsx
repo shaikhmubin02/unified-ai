@@ -35,11 +35,11 @@ export default function LandingContent() {
   const prices = {
     starter: {
       monthly: 19,
-      yearly: 180,  // 19 * 12 * 0.8 (20% discount)
+      yearly: 182,  // 19 * 12 * 0.8 = 182.40 (rounded down)
     },
     pro: {
-      monthly: 49,
-      yearly: 470,  // 49 * 12 * 0.8
+      monthly: 29,
+      yearly: 278,  // 29 * 12 * 0.8 = 278.40 (rounded down)
     }
   };
 
@@ -446,51 +446,49 @@ export default function LandingContent() {
             <div className="mx-4 sm:mx-8 md:mx-16 lg:mx-24">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-white mb-4">
-                  Trusted by Industry Leaders
+                  Join the AI Revolution
                 </h2>
                 <p className="text-gray-400">
-                  Join thousands of companies already transforming their AI workflow
+                  Be among the first to experience the future of AI interaction
                 </p>
               </div>
               
-              {/* Stats */}
+              {/* Early Access Benefits */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-emerald-400 mb-2">10k+</div>
-                  <div className="text-gray-400">Active Users</div>
+                  <div className="text-4xl font-bold text-emerald-400 mb-2">Early</div>
+                  <div className="text-gray-400">Access Benefits</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-emerald-400 mb-2">500+</div>
-                  <div className="text-gray-400">Enterprise Clients</div>
+                  <div className="text-4xl font-bold text-emerald-400 mb-2">Beta</div>
+                  <div className="text-gray-400">Testing Priority</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-emerald-400 mb-2">1M+</div>
-                  <div className="text-gray-400">AI Conversations</div>
+                  <div className="text-4xl font-bold text-emerald-400 mb-2">24/7</div>
+                  <div className="text-gray-400">Support Access</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-emerald-400 mb-2">99.9%</div>
-                  <div className="text-gray-400">Uptime</div>
+                  <div className="text-4xl font-bold text-emerald-400 mb-2">50%</div>
+                  <div className="text-gray-400">Launch Discount</div>
                 </div>
               </div>
 
-              {/* Logos Marquee */}
+              {/* Coming Soon Partners */}
               <div className="relative">
                 <Marquee className="py-6" pauseOnHover>
                   {[
-                    "OpenAI",
-                    "Anthropic",
-                    "Google AI",
-                    "DeepMind",
-                    "Microsoft AI",
-                    "Cohere",
-                    "Stability AI",
-                    "Hugging Face",
-                    "AI21 Labs",
-                    "Scale AI"
-                  ].map((company, index) => (
+                    "Integration Coming Soon",
+                    "Partnership Pending",
+                    "Beta Testing",
+                    "Under Development",
+                    "Coming Soon",
+                    "In Progress",
+                    "Beta Access",
+                    "Early Preview"
+                  ].map((status, index) => (
                     <div key={index} className="mx-8">
                       <div className="h-12 px-8 bg-gray-800/50 rounded-lg flex items-center justify-center text-gray-300 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-                        {company}
+                        {status}
                       </div>
                     </div>
                   ))}
@@ -499,6 +497,16 @@ export default function LandingContent() {
                 {/* Gradient Overlays */}
                 <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#0e1011] to-transparent z-10" />
                 <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-[#0e1011] to-transparent z-10" />
+              </div>
+
+              {/* Early Access CTA */}
+              <div className="text-center mt-12">
+                <p className="text-gray-400 mb-4">
+                  Limited spots available for our exclusive beta program
+                </p>
+                <Button className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                  Join Waitlist
+                </Button>
               </div>
             </div>
           </div>
@@ -735,6 +743,7 @@ export default function LandingContent() {
           </div>
         </section>
 
+        {/* Pricing Section */}
         <section className="py-24 bg-[#0e1011] relative overflow-hidden">
           <div className="container mx-auto px-4 relative z-10">
             <div className="text-center mb-16">
@@ -783,32 +792,38 @@ export default function LandingContent() {
               <div className="relative bg-gradient-to-b from-gray-900/80 to-gray-950 backdrop-blur-sm rounded-2xl p-8 border border-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] group hover:-translate-y-1">
                 <div className="absolute inset-x-0 h-px -top-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
                 <div className="absolute inset-x-0 h-px -bottom-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
-                <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">Basic</h3>
                 <div className="text-emerald-400 text-4xl font-bold mb-6 flex items-baseline">
                   ${isYearly ? prices.starter.yearly : prices.starter.monthly}
                   <span className="text-lg text-gray-500 font-normal">
                     /{isYearly ? 'yr' : 'mo'}
                   </span>
                 </div>
-                <p className="text-gray-400 mb-6">Perfect for individuals getting started with AI</p>
+                <p className="text-gray-400 mb-6">Perfect for individual AI enthusiasts</p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors">
                     <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Access to ChatGPT & Claude
+                    Access to All AI Models
                   </li>
                   <li className="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors">
                     <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    1,000 messages/month
+                    Unlimited messages
                   </li>
                   <li className="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors">
                     <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Basic chat features
+                    Basic features
+                  </li>
+                  <li className="flex items-center text-gray-300 group-hover:text-gray-200 transition-colors">
+                    <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Standard support
                   </li>
                 </ul>
                 <button className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 text-emerald-500 font-semibold border border-emerald-500/20 hover:border-emerald-500/50 hover:bg-emerald-500/20 transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]">
@@ -827,7 +842,7 @@ export default function LandingContent() {
                     /{isYearly ? 'yr' : 'mo'}
                   </span>
                 </div>
-                <p className="text-gray-200 mb-6">Best for professionals and small teams</p>
+                <p className="text-gray-200 mb-6">Best for power users and teams</p>
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center text-gray-200 group-hover:text-white transition-colors">
                     <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -845,7 +860,13 @@ export default function LandingContent() {
                     <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Advanced features
+                    Advanced features & plugins
+                  </li>
+                  <li className="flex items-center text-gray-200 group-hover:text-white transition-colors">
+                    <svg className="w-5 h-5 text-emerald-500 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Priority support
                   </li>
                 </ul>
                 <button className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)]">
@@ -899,17 +920,18 @@ export default function LandingContent() {
           </div>
         </section>
 
+        {/* Vision & Future Impact Section */}
         <section className="py-24 bg-[#0e1011] relative overflow-hidden">
           <div className="container mx-auto px-4 relative z-10">
             <div className="text-center mb-16">
               <span className="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-medium mb-4 inline-block border border-emerald-500/20">
-                TESTIMONIALS
+                THE FUTURE
               </span>
               <h2 className="text-4xl font-bold text-white mb-4">
-                Loved by AI Enthusiasts
+                Imagine the Possibilities
               </h2>
-              <p className="text-xl text-gray-400">
-                Join thousands of satisfied users who&apos;ve transformed their AI workflow
+              <p className="text-gray-400">
+                Here's how Unified AI will transform your AI workflow
               </p>
             </div>
 
@@ -918,38 +940,38 @@ export default function LandingContent() {
               <Marquee className="mb-8" pauseOnHover>
                 {[
                   {
-                    name: "Alex Thompson",
-                    role: "Software Engineer",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-                    content: "Switching between AI models is incredibly smooth. It's like having a team of AI assistants at your fingertips!"
+                    persona: "Developer",
+                    useCase: "Code Generation",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dev",
+                    content: "Compare responses from different AI models to get the best code suggestions and explanations."
                   },
                   {
-                    name: "Sarah Chen",
-                    role: "Data Scientist",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-                    content: "The ability to leverage different AI models for different tasks has significantly improved my workflow."
+                    persona: "Researcher",
+                    useCase: "Data Analysis",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Research",
+                    content: "Leverage multiple AI models simultaneously for comprehensive data insights and analysis."
                   },
                   {
-                    name: "Michael Roberts",
-                    role: "Product Manager",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-                    content: "Finally, a platform that brings together all the best AI models in one place. Game changer!"
+                    persona: "Writer",
+                    useCase: "Content Creation",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Writer",
+                    content: "Switch between AI models to find the perfect tone and style for your content."
                   }
-                ].map((testimonial, index) => (
+                ].map((useCase, index) => (
                   <div key={index} className="mx-4 w-[400px]">
                     <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-emerald-500/20">
                       <div className="flex items-center mb-4">
                         <img
-                          src={testimonial.image}
-                          alt={testimonial.name}
+                          src={useCase.image}
+                          alt={useCase.persona}
                           className="w-12 h-12 rounded-full mr-4"
                         />
                         <div>
-                          <h4 className="text-white font-semibold">{testimonial.name}</h4>
-                          <p className="text-emerald-500 text-sm">{testimonial.role}</p>
+                          <h4 className="text-white font-semibold">{useCase.persona}</h4>
+                          <p className="text-emerald-500 text-sm">{useCase.useCase}</p>
                         </div>
                       </div>
-                      <p className="text-gray-300">{testimonial.content}</p>
+                      <p className="text-gray-300">{useCase.content}</p>
                     </div>
                   </div>
                 ))}
@@ -959,38 +981,38 @@ export default function LandingContent() {
               <Marquee reverse pauseOnHover>
                 {[
                   {
-                    name: "Emily Parker",
-                    role: "Content Creator",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
-                    content: "The platform's intuitive interface makes it easy to get the best out of each AI model."
+                    persona: "Student",
+                    useCase: "Learning Assistant",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Student",
+                    content: "Get explanations in different styles to better understand complex topics."
                   },
                   {
-                    name: "David Kim",
-                    role: "Research Analyst",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-                    content: "Outstanding platform! The ability to compare responses from different AI models is invaluable."
+                    persona: "Business Analyst",
+                    useCase: "Market Research",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Analyst",
+                    content: "Combine insights from multiple AI models for comprehensive market analysis."
                   },
                   {
-                    name: "Lisa Martinez",
-                    role: "Technical Writer",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
-                    content: "This has completely transformed how I interact with AI. Absolutely worth every penny!"
+                    persona: "Designer",
+                    useCase: "Creative Ideation",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Designer",
+                    content: "Explore different creative directions with various AI models as your brainstorming partners."
                   }
-                ].map((testimonial, index) => (
+                ].map((useCase, index) => (
                   <div key={index} className="mx-4 w-[400px]">
                     <div className="bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-emerald-500/20">
                       <div className="flex items-center mb-4">
                         <img
-                          src={testimonial.image}
-                          alt={testimonial.name}
+                          src={useCase.image}
+                          alt={useCase.persona}
                           className="w-12 h-12 rounded-full mr-4"
                         />
                         <div>
-                          <h4 className="text-white font-semibold">{testimonial.name}</h4>
-                          <p className="text-emerald-500 text-sm">{testimonial.role}</p>
+                          <h4 className="text-white font-semibold">{useCase.persona}</h4>
+                          <p className="text-emerald-500 text-sm">{useCase.useCase}</p>
                         </div>
                       </div>
-                      <p className="text-gray-300">{testimonial.content}</p>
+                      <p className="text-gray-300">{useCase.content}</p>
                     </div>
                   </div>
                 ))}
@@ -999,6 +1021,16 @@ export default function LandingContent() {
               {/* Gradient Overlays */}
               <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#0e1011] to-transparent z-10" />
               <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-[#0e1011] to-transparent z-10" />
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center mt-12">
+              <p className="text-gray-400 mb-4">
+                Be among the first to experience these possibilities
+              </p>
+              <Button className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                Join the Waitlist
+              </Button>
             </div>
           </div>
         </section>

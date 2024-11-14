@@ -45,8 +45,10 @@ const Pricing = () => {
             <h3 className="text-2xl font-semibold mb-2">Free</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">Perfect for getting started</p>
             <div className="mb-6">
-              <p className="text-4xl font-bold mb-2">$0<span className="text-lg font-normal">/month</span></p>
-              <p className="text-gray-600 dark:text-gray-400">No credit card required</p>
+              <p className="text-4xl font-bold mb-2">${isAnnual ? '182' : '19'}<span className="text-lg font-normal">/month</span></p>
+              <p className="text-emerald-600 dark:text-emerald-400">
+                {isAnnual ? 'Billed annually' : '$182 billed annually'}
+              </p>
             </div>
             <ul className="space-y-3 mb-6">
               <li className="flex items-center">
@@ -72,10 +74,10 @@ const Pricing = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-4">For serious researchers</p>
             <div className="mb-6">
               <p className="text-4xl font-bold mb-2">
-                ${isAnnual ? '15' : '19'}<span className="text-lg font-normal">/month</span>
+                ${isAnnual ? '278' : '29'}<span className="text-lg font-normal">/month</span>
               </p>
               <p className="text-emerald-600 dark:text-emerald-400">
-                {isAnnual ? 'Billed annually' : '$228 billed annually'}
+                {isAnnual ? 'Billed annually' : '$278 billed annually'}
               </p>
             </div>
             <ul className="space-y-3 mb-6">
