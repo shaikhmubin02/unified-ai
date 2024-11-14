@@ -6,10 +6,25 @@ import Image from 'next/image'
 import ShinyButton from '@/components/magicui/shiny-button'
 import { useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { isSignedIn } = useAuth()
+  const router = useRouter()
+
+  const scrollToFaq = () => {
+    // If we're not on the landing page, navigate there first
+    if (window.location.pathname !== '/landing') {
+      router.push('/landing')
+      // Wait for navigation to complete before scrolling
+      setTimeout(() => {
+        document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    } else {
+      document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 mx-4 sm:mx-8 md:mx-12 lg:mx-24 xl:mx-32 my-2 bg-[#0e1011] bg-opacity-90 border-[0.2px] border-gray-700 rounded-full shadow-lg z-50">
@@ -35,12 +50,12 @@ export default function Header() {
           >
             Pricing
           </Link>
-          <Link 
-            href="/" 
+          <button 
+            onClick={scrollToFaq}
             className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
           >
             FAQ
-          </Link>
+          </button>
           <Link 
             href="/landing/blog" 
             className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
@@ -75,6 +90,7 @@ export default function Header() {
         <div className="md:hidden bg-gray-800 mt-2 p-4 rounded-lg shadow-lg">
           <nav className="flex flex-col space-y-2">
             <Link href="/landing/pricing" className="text-gray-200 hover:text-emerald-400">Pricing</Link>
+            <button onClick={scrollToFaq} className="text-left text-gray-200 hover:text-emerald-400">FAQ</button>
             <Link href="/docs" className="text-gray-200 hover:text-emerald-400">Documentation</Link>
             <Link href="/landing/changelog" className="text-gray-200 hover:text-emerald-400">Changelog</Link>
             <Link href="/landing/blog" className="text-gray-200 hover:text-emerald-400">Blog</Link>

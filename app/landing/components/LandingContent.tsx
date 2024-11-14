@@ -20,6 +20,9 @@ import * as random from "maath/random/dist/maath-random.esm"
 import { Suspense, useRef, useState } from "react"
 import * as THREE from 'three'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
+import Link from "next/link";
 
 // Add metadata export if needed
 export const metadata = {
@@ -195,6 +198,22 @@ export default function LandingContent() {
     )
   }
 
+  const router = useRouter()
+  const { isSignedIn } = useAuth()
+
+  const handleNavigation = () => {
+    if (isSignedIn) {
+      router.push('/')
+    } else {
+      router.push('/sign-up')
+    }
+  }
+
+  const scrollToSection = () => {
+    const section = document.getElementById('problem-section')
+    section?.scrollIntoView({ behavior: 'smooth' })
+  }
+
     return (
       <div className="relative">
         <main className="pt-36 pb-20 text-center min-h-[88vh] flex items-center relative overflow-hidden bg-[#0e1011]">
@@ -259,7 +278,7 @@ export default function LandingContent() {
                   "group rounded-full border border-emerald-500/20 bg-gray-900/50 backdrop-blur-sm text-base text-white transition-all ease-in hover:cursor-pointer hover:border-emerald-500/40 hover:bg-gray-900/70",
                 )}>
                   <AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-emerald-400">
-                    <span className="text-sm">✨ Try Unified AI</span>
+                    <Link href={isSignedIn ? "/" : "/sign-up"}><span className="text-sm">✨ Try Unified AI</span></Link>
                     <ArrowRight className="ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
                   </AnimatedShinyText>
                 </div>
@@ -323,8 +342,8 @@ export default function LandingContent() {
                 It&apos;s like a party where all the cool AIs hang out, and you&apos;re invited! 🎉
               </motion.p>
               <motion.div variants={itemVariants}>
-                <RainbowButton>
-                  Join the AI Revolution
+                <RainbowButton onClick={scrollToSection}>
+                  Learn More About Unified AI
                 </RainbowButton>
               </motion.div>
             </motion.div>
@@ -332,7 +351,7 @@ export default function LandingContent() {
         </main>
         
         {/* Problem Agitation Section*/}
-        <section className="py-24 bg-[#0e1011] relative">
+        <section id="problem-section" className="py-24 bg-[#0e1011] relative">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-[100px]" />
           </div>
@@ -1035,7 +1054,7 @@ export default function LandingContent() {
           </div>
         </section>
 
-        <section className="py-16 bg-[#0e1011] relative">
+        <section id="faq-section" className="py-16 bg-[#0e1011] relative">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="mx-4 sm:mx-8 md:mx-16 lg:mx-24">
               <div className="text-center mb-12">
