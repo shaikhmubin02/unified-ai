@@ -6,12 +6,13 @@ import Image from 'next/image'
 import ShinyButton from '@/components/magicui/shiny-button'
 import { useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { isSignedIn } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   const scrollToFaq = () => {
     // If we're not on the landing page, navigate there first
@@ -24,6 +25,10 @@ export default function Header() {
     } else {
       document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })
     }
+  }
+
+  const isActivePath = (path: string) => {
+    return pathname === path
   }
 
   return (
@@ -46,7 +51,9 @@ export default function Header() {
         <div className="hidden md:flex items-center space-x-9">
           <Link 
             href="/landing/pricing" 
-            className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
+            className={`text-sm font-mono tracking-wider relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full ${
+              isActivePath('/landing/pricing') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'
+            }`}
           >
             Pricing
           </Link>
@@ -58,13 +65,17 @@ export default function Header() {
           </button>
           <Link 
             href="/landing/blog" 
-            className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
+            className={`text-sm font-mono tracking-wider relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full ${
+              isActivePath('/landing/blog') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'
+            }`}
           >
             Blog
           </Link>
           <Link 
             href="/landing/changelog" 
-            className="text-gray-200 font-mono tracking-wider text-sm hover:text-emerald-400 relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full"
+            className={`text-sm font-mono tracking-wider relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-400 after:transition-all hover:after:w-full ${
+              isActivePath('/landing/changelog') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'
+            }`}
           >
             Changelog
           </Link>
@@ -89,11 +100,27 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-gray-800 mt-2 p-4 rounded-lg shadow-lg">
           <nav className="flex flex-col space-y-2">
-            <Link href="/landing/pricing" className="text-gray-200 hover:text-emerald-400">Pricing</Link>
-            <button onClick={scrollToFaq} className="text-left text-gray-200 hover:text-emerald-400">FAQ</button>
-            <Link href="/docs" className="text-gray-200 hover:text-emerald-400">Documentation</Link>
-            <Link href="/landing/changelog" className="text-gray-200 hover:text-emerald-400">Changelog</Link>
-            <Link href="/landing/blog" className="text-gray-200 hover:text-emerald-400">Blog</Link>
+            <Link 
+              href="/landing/pricing" 
+              className={isActivePath('/landing/pricing') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'}
+            >
+              Pricing
+            </Link>
+            <button onClick={scrollToFaq} className="text-left text-gray-200 hover:text-emerald-400">
+              FAQ
+            </button>
+            <Link 
+              href="/landing/blog" 
+              className={isActivePath('/landing/blog') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'}
+            >
+              Blog
+            </Link>
+            <Link 
+              href="/landing/changelog" 
+              className={isActivePath('/landing/changelog') ? 'text-emerald-400' : 'text-gray-200 hover:text-emerald-400'}
+            >
+              Changelog
+            </Link>
             <Link href={isSignedIn ? "/" : "/sign-up"} className="text-emerald-400 font-semibold">
               {isSignedIn ? "Dashboard" : "Get Started"}
             </Link>
