@@ -931,7 +931,7 @@ export default function LandingContent() {
                 Imagine the Possibilities
               </h2>
               <p className="text-gray-400">
-                Here's how Unified AI will transform your AI workflow
+                Here&apos;s how Unified AI will transform your AI workflow
               </p>
             </div>
 
